@@ -1,8 +1,8 @@
 # This fork changes
-1. Online data generation (simulator), without writing to file for iot scenarios (for DB: Victoria Metrics, Quest DB, Click House)
-1. iot request generation for DB: Victoria Metrics, Quest DB, Click House 
-1. Click House should not empty DB each start
-1. Click House should use new sintaksis for MergeTree table initialization
+1. Online data generation (simulator), without writing to file for iot scenarios (for DB: Victoria Metrics, Quest DB, Click House) -wip
+1. iot request generation for DB: Victoria Metrics, Quest DB, Click House -planned
+1. Click House should not empty DB each start -planned
+1. Click House should use new sintaksis for MergeTree table initialization - wip
 
 # Original description:
 # Time Series Benchmark Suite (TSBS)
