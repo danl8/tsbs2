@@ -1,3 +1,10 @@
+# This fork changes
+1. Online data generation (simulator), without writing to file for iot scenarios (for DB: Victoria Metrics, Quest DB, Click House)
+1. iot request generation for DB: Victoria Metrics, Quest DB, Click House 
+1. Click House should not empty DB each start
+1. Click House should use new sintaksis for MergeTree table initialization
+
+# Original description:
 # Time Series Benchmark Suite (TSBS)
 This repo contains code for benchmarking several time series databases,
 including TimescaleDB, MongoDB, InfluxDB, CrateDB and Cassandra.
