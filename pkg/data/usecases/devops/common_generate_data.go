@@ -3,6 +3,7 @@ package devops
 import (
 	"github.com/timescale/tsbs/pkg/data"
 	"github.com/timescale/tsbs/pkg/data/usecases/common"
+	"sync"
 	"time"
 )
 
@@ -57,6 +58,8 @@ type commonDevopsSimulator struct {
 	timestampStart time.Time
 	timestampEnd   time.Time
 	interval       time.Duration
+
+	mu sync.RWMutex
 }
 
 // Finished tells whether we have simulated all the necessary points

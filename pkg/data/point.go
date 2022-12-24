@@ -24,10 +24,10 @@ type Point struct {
 func NewPoint() *Point {
 	return &Point{
 		measurementName: nil,
-		tagKeys:         make([][]byte, 0),
-		tagValues:       make([]interface{}, 0),
-		fieldKeys:       make([][]byte, 0),
-		fieldValues:     make([]interface{}, 0),
+		tagKeys:         make([][]byte, 0, 8),
+		tagValues:       make([]interface{}, 0, 8),
+		fieldKeys:       make([][]byte, 0, 7),
+		fieldValues:     make([]interface{}, 0, 7),
 		timestamp:       nil,
 	}
 }

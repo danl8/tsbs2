@@ -1,9 +1,11 @@
 package devops
 
 import (
+	"fmt"
 	"github.com/timescale/tsbs/pkg/data"
 	"github.com/timescale/tsbs/pkg/data/usecases/common"
 	"math"
+	"sync"
 	"time"
 )
 
@@ -18,9 +20,16 @@ type GenericMetricsSimulator struct {
 	*commonDevopsSimulator
 }
 
+func (gms *GenericMetricsSimulator) Mu() *sync.RWMutex {
+	return &gms.commonDevopsSimulator.mu
+}
+
 // NewSimulator creates GenericMetricsSimulator for generic-devops use-case. Number of metrics assigned to each host follow zipf distribution.
 // 50% of hosts is long lived and 50% has a liftspan that follows zipf distribution.
-func (c *GenericMetricsSimulatorConfig) NewSimulator(interval time.Duration, limit uint64) common.Simulator {
+func (c *GenericMetricsSimulatorConfig) NewSimulator(interval time.Duration, limit uint64, simNumber int) common.Simulator {
+	if simNumber != 0 {
+		panic(fmt.Sprintf("Multiple simulators not implmented for DevopsSimulatorConfig,but simNumber=%v specified", simNumber))
+	}
 	hostInfos := make([]Host, c.HostCount)
 	// initialize all generic metric fields at once so they can be reused for different hosts
 	initGenericMetricFields(c.MaxMetricCount)
@@ -87,7 +96,7 @@ func (gms *GenericMetricsSimulator) Next(p *data.Point) bool {
 		// advance time & measurements for all the hosts. Note that this will advance
 		// measurements for non started hosts as well - not an optimal but should be good enought
 		for _, h := range gms.hosts {
-			h.TickAll(gms.interval)
+			h.TickAll(gms.interval, common.GetGlobalRandomizer())
 		}
 		// increment epoch and adjust epoch hosts
 		gms.adjustNumHostsForEpoch()

@@ -26,7 +26,7 @@ func TestGenericMetricsSimulatorFields(t *testing.T) {
 	metricCount := uint64(8)
 	hostCount := uint64(10)
 	config := getSimulatorConfig(hostCount, metricCount)
-	simulator := config.NewSimulator(time.Hour, 0)
+	simulator := config.NewSimulator(time.Hour, 0, 0)
 	fields := simulator.Fields()
 	assertEqualInt(1, len(fields), "Wrong number of measurements", t)
 
@@ -41,7 +41,7 @@ func TestGenericMetricsSimulatorHosts(t *testing.T) {
 	metricCount := uint64(8)
 	hostCount := uint64(10)
 	config := getSimulatorConfig(hostCount, metricCount)
-	simulator := config.NewSimulator(time.Hour, 0).(*GenericMetricsSimulator)
+	simulator := config.NewSimulator(time.Hour, 0, 0).(*GenericMetricsSimulator)
 	assertEqualInt(len(simulator.hosts), int(hostCount), "Wrong number of hosts generated", t)
 
 	for i, host := range simulator.hosts {
@@ -73,7 +73,7 @@ func TestGenericMetricsSimulatorRun(t *testing.T) {
 	hostCount := uint64(10)
 	metricCount := uint64(10)
 	config := getSimulatorConfig(hostCount, metricCount)
-	simulator := config.NewSimulator(2*time.Hour, 0).(*GenericMetricsSimulator)
+	simulator := config.NewSimulator(2*time.Hour, 0, 0).(*GenericMetricsSimulator)
 
 	pointsWrittenCnt := 0
 	pointsNotWrittenCnt := 0

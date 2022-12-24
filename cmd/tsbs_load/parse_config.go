@@ -138,6 +138,7 @@ func convertDataSourceConfigToInternalRepresentation(format string, d *DataSourc
 			LogInterval:           d.Simulator.LogInterval,
 			MaxMetricCountPerHost: d.Simulator.MaxMetricCountPerHost,
 			InterleavedNumGroups:  1,
+			SimWorkersCount:       d.Simulator.SimWorkersCount,
 		}
 	}
 	return &source.DataSourceConfig{

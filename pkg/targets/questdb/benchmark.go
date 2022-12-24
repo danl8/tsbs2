@@ -1,4 +1,4 @@
-package victoriametrics
+package questdb
 
 import (
 	"bufio"
@@ -14,7 +14,8 @@ import (
 )
 
 type SpecificConfig struct {
-	ServerURLs []string `yaml:"urls" mapstructure:"urls"`
+	ILPBindTo string `yaml:"ilp-bind-to" mapstructure:"ilp-bind-to"`
+	URL       string `yaml:"url" mapstructure:"url"`
 }
 
 func parseSpecificConfig(v *viper.Viper) (*SpecificConfig, error) {
@@ -27,7 +28,8 @@ func parseSpecificConfig(v *viper.Viper) (*SpecificConfig, error) {
 
 // loader.Benchmark interface implementation
 type benchmark struct {
-	serverURLs  []string
+	ilpBindTo   string
+	url         string
 	dataSource  targets.DataSource
 	dataSources []targets.DataSource
 }
@@ -36,14 +38,15 @@ func (b *benchmark) GetDataSources() []targets.DataSource {
 	return b.dataSources
 }
 
-func NewBenchmark(vmSpecificConfig *SpecificConfig, dataSourceConfig *source.DataSourceConfig) (targets.Benchmark, error) {
+func NewBenchmark(qdbSpecificConfig *SpecificConfig, dataSourceConfig *source.DataSourceConfig) (targets.Benchmark, error) {
 	if dataSourceConfig.Type == source.FileDataSourceType {
 		br := load.GetBufferedReader(dataSourceConfig.File.Location)
 		return &benchmark{
 			dataSource: &fileDataSource{
 				scanner: bufio.NewScanner(br),
 			},
-			serverURLs: vmSpecificConfig.ServerURLs,
+			ilpBindTo: qdbSpecificConfig.ILPBindTo,
+			url:       qdbSpecificConfig.URL,
 		}, nil
 	} else if dataSourceConfig.Type == source.SimulatorDataSourceType {
 		if dataSourceConfig.Simulator.SimWorkersCount <= 1 {
@@ -53,11 +56,11 @@ func NewBenchmark(vmSpecificConfig *SpecificConfig, dataSourceConfig *source.Dat
 				return nil, err
 			}
 			target := NewTarget()
-			converter := targets.NewSerializerConverter(target.Serializer())
-			ds := targets.NewSimulationDataSource(simulator, target, converter)
+			ds := targets.NewSimulationDataSource(simulator, target, targets.NewSerializerConverter(target.Serializer()))
 			return &benchmark{
 				dataSource: ds,
-				serverURLs: vmSpecificConfig.ServerURLs,
+				ilpBindTo:  qdbSpecificConfig.ILPBindTo,
+				url:        qdbSpecificConfig.URL,
 			}, nil
 		}
 
@@ -77,12 +80,12 @@ func NewBenchmark(vmSpecificConfig *SpecificConfig, dataSourceConfig *source.Dat
 		return &benchmark{
 			dataSources: dataSources,
 			dataSource:  nil,
-			serverURLs:  vmSpecificConfig.ServerURLs,
+			ilpBindTo:   qdbSpecificConfig.ILPBindTo,
+			url:         qdbSpecificConfig.URL,
 		}, nil
-
 	}
 
-	return nil, errors.New(fmt.Sprintf("Data source type %v is supported for VictoriaMetrics", dataSourceConfig.Type))
+	return nil, errors.New(fmt.Sprintf("Data source type %v is supported for QuestDB", dataSourceConfig.Type))
 }
 
 func (b *benchmark) GetDataSource() targets.DataSource {
@@ -103,17 +106,12 @@ func (b *benchmark) GetPointIndexer(maxPartitions uint) targets.PointIndexer {
 }
 
 func (b *benchmark) GetProcessor() targets.Processor {
-	return &processor{vmURLs: b.serverURLs}
+	return &processor{
+		ilpBindTo: b.ilpBindTo,
+		url:       b.url,
+	}
 }
 
 func (b *benchmark) GetDBCreator() targets.DBCreator {
 	return &dbCreator{}
-}
-
-type factory struct {
-	bufPool *sync.Pool
-}
-
-func (f *factory) New() targets.Batch {
-	return &batch{buf: f.bufPool.Get().(*bytes.Buffer)}
 }

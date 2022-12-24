@@ -51,4 +51,5 @@ type SimulatorDataSourceConfig struct {
 	Limit                 uint64        `yaml:"max-data-points" mapstructure:"max-data-points"`
 	LogInterval           time.Duration `yaml:"log-interval" mapstructure:"log-interval"`
 	MaxMetricCountPerHost uint64        `yaml:"max-metric-count" mapstructure:"max-metric-count"`
+	SimWorkersCount       int           `yaml:"sim-workers-count" mapstructure:"sim-workers-count"`
 }

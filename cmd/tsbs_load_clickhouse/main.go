@@ -11,6 +11,7 @@ import (
 	"github.com/timescale/tsbs/load"
 	"github.com/timescale/tsbs/pkg/targets"
 	"github.com/timescale/tsbs/pkg/targets/clickhouse"
+	"log"
 )
 
 // Global vars
@@ -52,5 +53,9 @@ func init() {
 }
 
 func main() {
-	loader.RunBenchmark(clickhouse.NewBenchmark(loaderConf.FileName, loaderConf.HashWorkers, conf))
+	b, e := clickhouse.NewBenchmark(loaderConf.FileName, loaderConf.HashWorkers, conf)
+	if e != nil {
+		log.Fatalf(e.Error())
+	}
+	loader.RunBenchmark(b)
 }

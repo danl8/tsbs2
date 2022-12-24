@@ -2,6 +2,7 @@ package devops
 
 import (
 	"github.com/timescale/tsbs/pkg/data"
+	"github.com/timescale/tsbs/pkg/data/usecases/common"
 	"math/rand"
 	"testing"
 	"time"
@@ -29,7 +30,7 @@ func TestMemMeasurementTick(t *testing.T) {
 	}
 
 	rand.Seed(123)
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 	err := testDistributionsAreDifferent(oldVals, m.SubsystemMeasurement, fields)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -37,7 +38,7 @@ func TestMemMeasurementTick(t *testing.T) {
 	if got := m.bytesTotal; got != oldTotal {
 		t.Errorf("total bytes unexpectedly changed: got %d want %d", got, oldTotal)
 	}
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 	err = testDistributionsAreDifferent(oldVals, m.SubsystemMeasurement, fields)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -51,7 +52,7 @@ func TestMemMeasurementToPoint(t *testing.T) {
 	now := time.Now()
 	m := NewMemMeasurement(now)
 	duration := time.Second
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 
 	p := data.NewPoint()
 	m.ToPoint(p)

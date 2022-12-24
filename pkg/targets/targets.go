@@ -58,6 +58,9 @@ type Benchmark interface {
 	// GetDataSource returns the DataSource to use for this Benchmark
 	GetDataSource() DataSource
 
+	// GetDataSource returns the DataSource to use for this Benchmark
+	GetDataSources() []DataSource
+
 	// GetBatchFactory returns the BatchFactory to use for this Benchmark
 	GetBatchFactory() BatchFactory
 

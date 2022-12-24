@@ -1,8 +1,10 @@
 package devops
 
 import (
+	"fmt"
 	"github.com/timescale/tsbs/pkg/data"
 	"github.com/timescale/tsbs/pkg/data/usecases/common"
+	"sync"
 	"time"
 )
 
@@ -10,6 +12,10 @@ import (
 // It fulfills the Simulator interface.
 type CPUOnlySimulator struct {
 	*commonDevopsSimulator
+}
+
+func (d *CPUOnlySimulator) Mu() *sync.RWMutex {
+	return &d.commonDevopsSimulator.mu
 }
 
 // Fields returns a map of subsystems to metrics collected
@@ -32,7 +38,7 @@ func (d *CPUOnlySimulator) Next(p *data.Point) bool {
 		d.hostIndex = 0
 
 		for i := 0; i < len(d.hosts); i++ {
-			d.hosts[i].TickAll(d.interval)
+			d.hosts[i].TickAll(d.interval, common.GetGlobalRandomizer())
 		}
 
 		d.adjustNumHostsForEpoch()
@@ -45,7 +51,10 @@ func (d *CPUOnlySimulator) Next(p *data.Point) bool {
 type CPUOnlySimulatorConfig commonDevopsSimulatorConfig
 
 // NewSimulator produces a Simulator that conforms to the given SimulatorConfig over the specified interval
-func (c *CPUOnlySimulatorConfig) NewSimulator(interval time.Duration, limit uint64) common.Simulator {
+func (c *CPUOnlySimulatorConfig) NewSimulator(interval time.Duration, limit uint64, simNumber int) common.Simulator {
+	if simNumber != 0 {
+		panic(fmt.Sprintf("Multiple simulators not implmented for DevopsSimulatorConfig,but simNumber=%v specified", simNumber))
+	}
 	hostInfos := make([]Host, c.HostCount)
 	for i := 0; i < len(hostInfos); i++ {
 		hostInfos[i] = c.HostConstructor(NewHostCtx(i, c.Start))

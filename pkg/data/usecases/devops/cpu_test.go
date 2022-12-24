@@ -42,12 +42,12 @@ func TestCPUMeasurementTick(t *testing.T) {
 	}
 
 	rand.Seed(123)
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 	err := testDistributionsAreDifferent(oldVals, m.SubsystemMeasurement, fields)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 	err = testDistributionsAreDifferent(oldVals, m.SubsystemMeasurement, fields)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -58,7 +58,7 @@ func TestCPUMeasurementToPoint(t *testing.T) {
 	now := time.Now()
 	m := NewCPUMeasurement(now)
 	duration := time.Second
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 
 	p := data.NewPoint()
 	m.ToPoint(p)
@@ -87,12 +87,12 @@ func TestSingleCPUMeasurementTick(t *testing.T) {
 	}
 
 	rand.Seed(123)
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 	err := testDistributionsAreDifferent(oldVals, m.SubsystemMeasurement, fields)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 	err = testDistributionsAreDifferent(oldVals, m.SubsystemMeasurement, fields)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -104,7 +104,7 @@ func TestSingleCPUMeasurementToPoint(t *testing.T) {
 	m := newSingleCPUMeasurement(now)
 	duration := time.Second
 	fields := cpuFields[:1] // only the first field in this use case
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 
 	p := data.NewPoint()
 	m.ToPoint(p)

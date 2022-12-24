@@ -25,7 +25,7 @@ func NewBenchmark(promSpecificConfig *SpecificConfig, dataSourceConfig *source.D
 		ds = &FileDataSource{iterator: promIter}
 	} else {
 		dataGenerator := &inputs.DataGenerator{}
-		simulator, err := dataGenerator.CreateSimulator(dataSourceConfig.Simulator)
+		simulator, err := dataGenerator.CreateSimulator(dataSourceConfig.Simulator, 0)
 		if err != nil {
 			return nil, err
 		}
@@ -117,6 +117,10 @@ type Benchmark struct {
 	dataSource      targets.DataSource
 	batchPool       *sync.Pool
 	client          *Client
+}
+
+func (pm *Benchmark) GetDataSources() []targets.DataSource {
+	return nil
 }
 
 func (pm *Benchmark) GetDataSource() targets.DataSource {

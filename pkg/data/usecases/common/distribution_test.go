@@ -10,7 +10,7 @@ type mockDistribution struct {
 	ReturnValue   float64
 }
 
-func (m *mockDistribution) Advance() {
+func (m *mockDistribution) Advance(randomizer Randomizer) {
 	m.AdvanceCalled = true
 }
 
@@ -24,7 +24,7 @@ func TestFloatPrecisionAdvance(t *testing.T) {
 
 	fp := FP(dist, 1)
 
-	fp.Advance()
+	fp.Advance(GetGlobalRandomizer())
 
 	if !dist.AdvanceCalled {
 		t.Errorf("FloatPrecision Advance call did not call underlying distribution Advance method")
@@ -148,7 +148,7 @@ func TestLazyDistribution(t *testing.T) {
 				step:      testCase.step,
 				threshold: testCase.threshold,
 			}
-			ld.Advance()
+			ld.Advance(GetGlobalRandomizer())
 			if !ld.motive.(*mockDistribution).AdvanceCalled {
 				t.Errorf("advance not called on saddle distribution")
 			}

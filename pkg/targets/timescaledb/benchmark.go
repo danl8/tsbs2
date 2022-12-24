@@ -15,7 +15,7 @@ func NewBenchmark(dbName string, opts *LoadingOptions, dataSourceConfig *source.
 		ds = newFileDataSource(dataSourceConfig.File.Location)
 	} else {
 		dataGenerator := &inputs.DataGenerator{}
-		simulator, err := dataGenerator.CreateSimulator(dataSourceConfig.Simulator)
+		simulator, err := dataGenerator.CreateSimulator(dataSourceConfig.Simulator, 0)
 		if err != nil {
 			return nil, err
 		}
@@ -33,6 +33,10 @@ type benchmark struct {
 	opts   *LoadingOptions
 	ds     targets.DataSource
 	dbName string
+}
+
+func (b *benchmark) GetDataSources() []targets.DataSource {
+	return nil
 }
 
 func (b *benchmark) GetDataSource() targets.DataSource {

@@ -2,7 +2,10 @@ package clickhouse
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
+	"github.com/timescale/tsbs/internal/inputs"
+	"github.com/timescale/tsbs/pkg/data/source"
 	"log"
 
 	"github.com/timescale/tsbs/load"
@@ -21,6 +24,8 @@ type ClickhouseConfig struct {
 	InTableTag bool
 	Debug      int
 	DbName     string
+
+	dataSourceConf *source.DataSourceConfig
 }
 
 // String values of tags and fields to insert - string representation
@@ -39,14 +44,14 @@ var fatal = log.Fatalf
 // getConnectString() builds connect string to ClickHouse
 // db - whether database specification should be added to the connection string
 func getConnectString(conf *ClickhouseConfig, db bool) string {
-	// connectString: tcp://127.0.0.1:9000?debug=true
+	// connectString: tcp://127.0.0.1:9000?Debug=true
 	// ClickHouse ex.:
-	// tcp://host1:9000?username=user&password=qwerty&database=clicks&read_timeout=10&write_timeout=20&alt_hosts=host2:9000,host3:9000
+	// tcp://host1:9000?username=User&Password=qwerty&database=clicks&read_timeout=10&write_timeout=20&alt_hosts=host2:9000,host3:9000
 	if db {
-		return fmt.Sprintf("tcp://%s:9000?username=%s&password=%s&database=%s", conf.Host, conf.User, conf.Password, conf.DbName)
+		return fmt.Sprintf("tcp://%s:9000?username=%s&Password=%s&database=%s", conf.Host, conf.User, conf.Password, conf.DbName)
 	}
 
-	return fmt.Sprintf("tcp://%s:9000?username=%s&password=%s", conf.Host, conf.User, conf.Password)
+	return fmt.Sprintf("tcp://%s:9000?username=%s&Password=%s", conf.Host, conf.User, conf.Password)
 }
 
 // Point is a single row of data keyed by which table it belongs
@@ -90,21 +95,68 @@ func (f *factory) New() targets.Batch {
 
 const tagsPrefix = "tags"
 
-func NewBenchmark(file string, hashWorkers bool, conf *ClickhouseConfig) targets.Benchmark {
-	return &benchmark{
-		ds: &fileDataSource{
-			scanner: bufio.NewScanner(load.GetBufferedReader(file)),
-		},
-		hashWorkers: hashWorkers,
-		conf:        conf,
+func NewBenchmark(file string, hashWorkers bool, conf *ClickhouseConfig) (targets.Benchmark, error) {
+	dataSourceConfig := conf.dataSourceConf
+	if dataSourceConfig.Type == source.FileDataSourceType {
+		br := load.GetBufferedReader(dataSourceConfig.File.Location)
+		return &benchmark{
+			ds: &fileDataSource{
+				scanner: bufio.NewScanner(br),
+			},
+			hashWorkers: hashWorkers,
+			conf:        conf,
+			dss:         nil,
+		}, nil
+	} else if dataSourceConfig.Type == source.SimulatorDataSourceType {
+		if dataSourceConfig.Simulator.SimWorkersCount <= 1 {
+			dataGenerator := &inputs.DataGenerator{}
+			simulator, err := dataGenerator.CreateSimulator(dataSourceConfig.Simulator, 0)
+			if err != nil {
+				return nil, err
+			}
+			ds := targets.NewSimulationDataSource(simulator, NewTarget(), NewConverter())
+			return &benchmark{
+				ds:          ds,
+				dss:         nil,
+				hashWorkers: hashWorkers,
+				conf:        conf,
+			}, nil
+		}
+
+		target := NewTarget()
+		converter := NewConverter()
+		dataSources := make([]targets.DataSource, 0, dataSourceConfig.Simulator.SimWorkersCount)
+		for i := 0; i < dataSourceConfig.Simulator.SimWorkersCount; i++ {
+			dataGenerator := &inputs.DataGenerator{}
+			simulator, err := dataGenerator.CreateSimulator(dataSourceConfig.Simulator, i)
+			if err != nil {
+				return nil, err
+			}
+			ds := targets.NewSimulationDataSource(simulator, target, converter)
+			dataSources = append(dataSources, ds)
+		}
+
+		return &benchmark{
+			ds:          nil,
+			dss:         dataSources,
+			hashWorkers: hashWorkers,
+			conf:        conf,
+		}, nil
 	}
+
+	return nil, errors.New(fmt.Sprintf("Data source type %v is supported for ClickHouse", dataSourceConfig.Type))
 }
 
 // targets.Benchmark interface implementation
 type benchmark struct {
 	ds          targets.DataSource
+	dss         []targets.DataSource
 	hashWorkers bool
 	conf        *ClickhouseConfig
+}
+
+func (b *benchmark) GetDataSources() []targets.DataSource {
+	return b.dss
 }
 
 func (b *benchmark) GetDataSource() targets.DataSource {
@@ -131,5 +183,14 @@ func (b *benchmark) GetProcessor() targets.Processor {
 
 // loader.Benchmark interface implementation
 func (b *benchmark) GetDBCreator() targets.DBCreator {
-	return &dbCreator{ds: b.GetDataSource(), config: b.conf}
+	if b.GetDataSource() != nil {
+		return &dbCreator{ds: b.GetDataSource(), config: b.conf}
+	}
+
+	if len(b.GetDataSources()) > 0 {
+		return &dbCreator{ds: b.GetDataSources()[0], config: b.conf}
+	}
+
+	log.Fatal("No single DataSource, not DataSources list specified")
+	return nil
 }

@@ -16,6 +16,10 @@ type naiveBenchmark struct {
 	mongoBenchmark
 }
 
+func (b *naiveBenchmark) GetDataSources() []targets.DataSource {
+	return nil
+}
+
 func newNaiveBenchmark(l load.BenchmarkRunner, loaderConf *load.BenchmarkRunnerConfig) *naiveBenchmark {
 	return &naiveBenchmark{mongoBenchmark{loaderConf.FileName, l, &dbCreator{}}}
 }

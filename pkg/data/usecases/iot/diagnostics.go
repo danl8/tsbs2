@@ -59,8 +59,8 @@ type customFuelDistribution struct {
 
 // Advance computes the next value of this distribution and stores it.
 // Its custom behavior is to refuel the truck once it gets to the min value.
-func (d *customFuelDistribution) Advance() {
-	d.ClampedRandomWalkDistribution.Advance()
+func (d *customFuelDistribution) Advance(randomizer common.Randomizer) {
+	d.ClampedRandomWalkDistribution.Advance(randomizer)
 	if d.State == d.Min {
 		d.State = d.Max
 	}

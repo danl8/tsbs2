@@ -3,6 +3,7 @@ package devops
 import (
 	"bytes"
 	"github.com/timescale/tsbs/pkg/data"
+	"github.com/timescale/tsbs/pkg/data/usecases/common"
 	"math/rand"
 	"testing"
 	"time"
@@ -39,7 +40,7 @@ func TestDiskMeasurementTick(t *testing.T) {
 	}
 
 	rand.Seed(123)
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 	err := testDistributionsAreDifferent(oldVals, m.SubsystemMeasurement, fields)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -51,7 +52,7 @@ func TestDiskMeasurementTick(t *testing.T) {
 		t.Errorf("disk FS type is incorrect: got %s want %s", got, origFS)
 	}
 
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 	err = testDistributionsAreDifferent(oldVals, m.SubsystemMeasurement, fields)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -71,7 +72,7 @@ func TestDiskMeasurementToPoint(t *testing.T) {
 	origFS := m.fsType
 	testIfInStringSlice(t, diskFSTypeChoices, m.fsType)
 	duration := time.Second
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 
 	p := data.NewPoint()
 	m.ToPoint(p)

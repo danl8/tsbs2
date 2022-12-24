@@ -25,6 +25,7 @@ func GetSimulatorConfig(dgc *common.DataGeneratorConfig) (common.SimulatorConfig
 
 	switch dgc.Use {
 	case common.UseCaseDevops:
+		assertNoMultithread(dgc.SimWorkersCount, dgc.Use)
 		ret = &devops.DevopsSimulatorConfig{
 			Start: tsStart,
 			End:   tsEnd,
@@ -41,8 +42,10 @@ func GetSimulatorConfig(dgc *common.DataGeneratorConfig) (common.SimulatorConfig
 			InitGeneratorScale:   dgc.InitialScale,
 			GeneratorScale:       dgc.Scale,
 			GeneratorConstructor: iot.NewTruck,
+			SimWorkersCount:      dgc.SimWorkersCount,
 		}
 	case common.UseCaseCPUOnly:
+		assertNoMultithread(dgc.SimWorkersCount, dgc.Use)
 		ret = &devops.CPUOnlySimulatorConfig{
 			Start: tsStart,
 			End:   tsEnd,
@@ -52,6 +55,7 @@ func GetSimulatorConfig(dgc *common.DataGeneratorConfig) (common.SimulatorConfig
 			HostConstructor: devops.NewHostCPUOnly,
 		}
 	case common.UseCaseCPUSingle:
+		assertNoMultithread(dgc.SimWorkersCount, dgc.Use)
 		ret = &devops.CPUOnlySimulatorConfig{
 			Start: tsStart,
 			End:   tsEnd,
@@ -61,6 +65,7 @@ func GetSimulatorConfig(dgc *common.DataGeneratorConfig) (common.SimulatorConfig
 			HostConstructor: devops.NewHostCPUSingle,
 		}
 	case common.UseCaseDevopsGeneric:
+		assertNoMultithread(dgc.SimWorkersCount, dgc.Use)
 		if dgc.InitialScale == dgc.Scale {
 			// if no initial scale argument given we will start with 50%. The lower bound is 1
 			dgc.InitialScale = uint64(math.Max(float64(1), float64(dgc.Scale/2)))
@@ -80,4 +85,11 @@ func GetSimulatorConfig(dgc *common.DataGeneratorConfig) (common.SimulatorConfig
 		err = fmt.Errorf("unknown use case: '%s'", dgc.Use)
 	}
 	return ret, err
+}
+
+func assertNoMultithread(workersCount int, useCase string) {
+	if workersCount > 1 {
+		panic(fmt.Errorf("multithreading not implemented for use case %v, but %v sim-workers-count spicified in config. Please set "+
+			"sim-workers-count = 1 or use another use case", useCase, workersCount))
+	}
 }

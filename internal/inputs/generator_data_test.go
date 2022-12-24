@@ -306,7 +306,7 @@ func TestGetSerializer(t *testing.T) {
 		t.Errorf("unexpected error creating scfg: %v", err)
 	}
 
-	sim := scfg.NewSimulator(dgc.LogInterval, 0)
+	sim := scfg.NewSimulator(dgc.LogInterval, 0, 0)
 	checkWriteHeader := func(format string, shouldWriteHeader bool) {
 		var buf bytes.Buffer
 		g.bufOut = bufio.NewWriter(&buf)

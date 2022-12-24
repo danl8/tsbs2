@@ -21,7 +21,7 @@ type monotonicDistribution struct {
 	state float64
 }
 
-func (d *monotonicDistribution) Advance() {
+func (d *monotonicDistribution) Advance(randomizer Randomizer) {
 	d.state++
 }
 
@@ -90,7 +90,7 @@ func TestSubsytemMeasurementTick(t *testing.T) {
 	for i := 0; i < numDistros; i++ {
 		m.Distributions[i] = &monotonicDistribution{state: float64(i)}
 	}
-	m.Tick(time.Nanosecond)
+	m.Tick(time.Nanosecond, GetGlobalRandomizer())
 	if got := m.Timestamp.UnixNano(); got != now.UnixNano()+1 {
 		t.Errorf("tick did not increase timestamp correct: got %d want %d", got, now.UnixNano()+1)
 	}
@@ -128,7 +128,7 @@ func setupToPoint(start time.Time) (*SubsystemMeasurement, []LabeledDistribution
 		{[]byte(toPointFieldLabel), func() Distribution { return &monotonicDistribution{state: toPointState} }},
 	}
 	m := NewSubsystemMeasurementWithDistributionMakers(start, makers)
-	m.Tick(time.Nanosecond)
+	m.Tick(time.Nanosecond, GetGlobalRandomizer())
 	return m, makers
 }
 

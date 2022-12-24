@@ -90,6 +90,10 @@ func init() {
 
 type benchmark struct{}
 
+func (b *benchmark) GetDataSources() []targets.DataSource {
+	return nil
+}
+
 func (b *benchmark) GetDataSource() targets.DataSource {
 	return &fileDataSource{scanner: bufio.NewScanner(load.GetBufferedReader(config.FileName))}
 }

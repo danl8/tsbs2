@@ -8,7 +8,7 @@ import (
 
 // SimulatorConfig is an interface to create a Simulator from a time.Duration.
 type SimulatorConfig interface {
-	NewSimulator(time.Duration, uint64) Simulator
+	NewSimulator(interval time.Duration, limit uint64, simNumber int) Simulator
 }
 
 // BaseSimulatorConfig is used to create a BaseSimulator.
@@ -23,6 +23,9 @@ type BaseSimulatorConfig struct {
 	GeneratorScale uint64
 	// GeneratorConstructor is the function used to create a new Generator given an id number and start time
 	GeneratorConstructor func(i int, start time.Time) Generator
+
+	// Count of workers for simulation if <=1 - single thread mode
+	SimWorkersCount int
 }
 
 func calculateEpochs(duration time.Duration, interval time.Duration) uint64 {
@@ -30,14 +33,25 @@ func calculateEpochs(duration time.Duration, interval time.Duration) uint64 {
 }
 
 // NewSimulator produces a Simulator that conforms to the given config over the specified interval.
-func (sc *BaseSimulatorConfig) NewSimulator(interval time.Duration, limit uint64) Simulator {
-	generators := make([]Generator, sc.GeneratorScale)
+func (sc *BaseSimulatorConfig) NewSimulator(interval time.Duration, limit uint64, simNumber int) Simulator {
+	scale := sc.GeneratorScale
+	if sc.SimWorkersCount > 1 {
+		scale = scale / uint64(sc.SimWorkersCount)
+		remainGens := sc.GeneratorScale % scale
+		if uint64(simNumber) < remainGens {
+			scale++
+		}
+	} else {
+		simNumber = 0
+	}
+	generators := make([]Generator, scale)
+
 	for i := 0; i < len(generators); i++ {
-		generators[i] = sc.GeneratorConstructor(i, sc.Start)
+		generators[i] = sc.GeneratorConstructor(i+simNumber*int(scale), sc.Start)
 	}
 
 	epochs := calculateEpochs(sc.End.Sub(sc.Start), interval)
-	maxPoints := epochs * sc.GeneratorScale * uint64(len(generators[0].Measurements()))
+	maxPoints := epochs * scale * uint64(len(generators[0].Measurements()))
 	if limit > 0 && limit < maxPoints {
 		// Set specified points number limit
 		maxPoints = limit
@@ -51,13 +65,15 @@ func (sc *BaseSimulatorConfig) NewSimulator(interval time.Duration, limit uint64
 
 		epoch:           0,
 		epochs:          epochs,
-		epochGenerators: sc.InitGeneratorScale,
-		initGenerators:  sc.InitGeneratorScale,
+		epochGenerators: scale,
+		initGenerators:  scale,
 		timestampStart:  sc.Start,
 		timestampEnd:    sc.End,
 		interval:        interval,
 
 		simulatedMeasurementIndex: 0,
+
+		simWorkersCount: sc.SimWorkersCount,
 	}
 
 	return sim
@@ -97,6 +113,8 @@ type BaseSimulator struct {
 	interval       time.Duration
 
 	simulatedMeasurementIndex int
+
+	simWorkersCount int
 }
 
 // Finished tells whether we have simulated all the necessary points.
@@ -106,6 +124,7 @@ func (s *BaseSimulator) Finished() bool {
 
 // Next advances a Point to the next state in the generator.
 func (s *BaseSimulator) Next(p *data.Point) bool {
+
 	if s.generatorIndex == uint64(len(s.generators)) {
 		s.generatorIndex = 0
 		s.simulatedMeasurementIndex++
@@ -114,9 +133,48 @@ func (s *BaseSimulator) Next(p *data.Point) bool {
 	if s.simulatedMeasurementIndex == len(s.generators[0].Measurements()) {
 		s.simulatedMeasurementIndex = 0
 
-		for i := 0; i < len(s.generators); i++ {
-			s.generators[i].TickAll(s.interval)
+		// TODO note, random will be initialized for each worker, random sequence repeatability will be lost
+		//		if workers > 1
+		// Performance with Workers Pool here worse than with single thread
+		// will add parallelization above
+		var r Randomizer
+		if s.simWorkersCount > 1 {
+			r = GetGlobalRandomizer()
+		} else {
+			r = GetGlobalRandomizer()
 		}
+		for i := 0; i < len(s.generators); i++ {
+			s.generators[i].TickAll(s.interval, r)
+		}
+		/*
+			if s.simWorkersCount > 1 {
+					taskChan := make(chan *Generator, s.simWorkersCount*2)
+					var wg sync.WaitGroup
+					for i := 0; i < s.simWorkersCount; i++ {
+						wg.Add(1)
+						r := GetUnsafeRandomizer()
+						go func() {
+							defer wg.Done()
+							for generator := range taskChan {
+								(*generator).TickAll(s.interval, r)
+							}
+						}()
+					}
+
+					for i := 0; i < len(s.generators); i++ {
+						taskChan <- &(s.generators[i])
+					}
+
+					close(taskChan)
+					wg.Wait()
+
+			} else {
+				// Perform single-thread
+				for i := 0; i < len(s.generators); i++ {
+					s.generators[i].TickAll(s.interval, GetGlobalRandomizer())
+				}
+			}
+		*/
 
 		s.adjustNumHostsForEpoch()
 	}
@@ -163,7 +221,6 @@ func (s *BaseSimulator) TagKeys() []string {
 	if len(s.generators) <= 0 {
 		panic("cannot get tag keys because no Generators added")
 	}
-
 	tags := s.generators[0].Tags()
 	tagKeys := make([]string, len(tags))
 	for i, tag := range tags {
@@ -197,7 +254,8 @@ func (s *BaseSimulator) Headers() *GeneratedDataHeaders {
 }
 
 // TODO(rrk) - Can probably turn this logic into a separate interface and implement other
-// types of scale up, e.g., exponential
+//
+//	types of scale up, e.g., exponential
 //
 // To "scale up" the number of reporting items, we need to know when
 // which epoch we are currently in. Once we know that, we can take the "missing"
@@ -213,6 +271,6 @@ func (s *BaseSimulator) adjustNumHostsForEpoch() {
 
 // SimulatedMeasurement simulates one measurement (e.g. Redis for DevOps).
 type SimulatedMeasurement interface {
-	Tick(time.Duration)
+	Tick(time.Duration, Randomizer)
 	ToPoint(*data.Point)
 }

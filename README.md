@@ -1,8 +1,40 @@
-# This fork changes
-1. Online data generation (simulator), without writing to file for iot scenarios (for DB: Victoria Metrics, Quest DB, Click House) -wip
-1. iot request generation for DB: Victoria Metrics, Quest DB, Click House -planned
-1. Click House should not empty DB each start -planned
-1. Click House should use new sintaksis for MergeTree table initialization - wip
+# Fork change list:
+**IMPORTANT** all changes were made in `tsbs_load` program. Since `tsbs_load_<dbname>` sometimes uses 
+different code base, not all changes made in `tsbs_load` will be available in `tsbs_load_<dbname>`.
+Also `tsbs_load_<dbname>` have not been tested at all.
+
+## Online data generation (on fly simulation) 
+Online data generation (benchmark without writing to temp file) now working for IoT scenarios, for DB:
+* Victoria Metrics
+* Quest DB
+* Click House 
+## Multithreading for online data generation
+Online (on fly) benchmark now can be used in multithreading mode.
+
+
+**IMPORTANT** in this mode each run may vary slightly, because data generated in parallel
+there is no guarantee that random generation will be called in same order as in previous run.
+So generated data will not be the same as in previous run, even with same Seed.
+
+To control multithreading yaml parameter added:
+```yaml
+data-source:
+    simulator:
+            sim-workers-count: 4
+```
+* If sim-workers-count = 1 - will work in single thread mode as before.
+* If sim-workers-count > 1 - data generation will be divided to sim-workers-count sub-batches, each sub-batch will be processed in separate thread
+
+Tested only with:
+* Victoria Metrics.
+* Quest DB
+* Click House
+## IoT request generation 
+for DB: Victoria Metrics, Quest DB, Click House -planned
+## Other changes
+* Click House should use new syntax for MergeTree table initialization
+
+
 
 # Original description:
 # Time Series Benchmark Suite (TSBS)
@@ -75,19 +107,19 @@ this use case will be based on the number of trucks tracked.
 Not all databases implement all use cases. This table below shows which use
 cases are implemented for each database:
 
-|Database|Dev ops|IoT|
-|:---|:---:|:---:|
-|Akumuli|X¹||
-|Cassandra|X||
-|ClickHouse|X||
-|CrateDB|X||
-|InfluxDB|X|X|
-|MongoDB|X|
-|QuestDB|X|X
-|SiriDB|X|
-|TimescaleDB|X|X|
-|Timestream|X||
-|VictoriaMetrics|X²||
+| Database        | Dev ops | IoT |
+|:----------------|:-------:|:---:|
+| Akumuli         |   X¹    |     |
+| Cassandra       |    X    |     |
+| ClickHouse      |    X    |     |
+| CrateDB         |    X    |     |
+| InfluxDB        |    X    |  X  |
+| MongoDB         |    X    |     |
+| QuestDB         |    X    |  X  |
+| SiriDB          |    X    |     |
+| TimescaleDB     |    X    |  X  |
+| Timestream      |    X    |     |
+| VictoriaMetrics |   X²    |     |
 
 ¹ Does not support the `groupby-orderby-limit` query
 ² Does not support the `groupby-orderby-limit`, `lastpoint`, `high-cpu-1`, `high-cpu-all` queries
@@ -403,37 +435,37 @@ the results.
 ### Devops / cpu-only
 |Query type|Description|
 |:---|:---|
-|single-groupby-1-1-1| Simple aggregrate (MAX) on one metric for 1 host, every 5 mins for 1 hour
-|single-groupby-1-1-12| Simple aggregrate (MAX) on one metric for 1 host, every 5 mins for 12 hours
-|single-groupby-1-8-1| Simple aggregrate (MAX) on one metric for 8 hosts, every 5 mins for 1 hour
-|single-groupby-5-1-1| Simple aggregrate (MAX) on 5 metrics for 1 host, every 5 mins for 1 hour
-|single-groupby-5-1-12| Simple aggregrate (MAX) on 5 metrics for 1 host, every 5 mins for 12 hours
-|single-groupby-5-8-1| Simple aggregrate (MAX) on 5 metrics for 8 hosts, every 5 mins for 1 hour
-|cpu-max-all-1| Aggregate across all CPU metrics per hour over 1 hour for a single host
-|cpu-max-all-8| Aggregate across all CPU metrics per hour over 1 hour for eight hosts
-|double-groupby-1| Aggregate on across both time and host, giving the average of 1 CPU metric per host per hour for 24 hours
-|double-groupby-5| Aggregate on across both time and host, giving the average of 5 CPU metrics per host per hour for 24 hours
-|double-groupby-all| Aggregate on across both time and host, giving the average of all (10) CPU metrics per host per hour for 24 hours
-|high-cpu-all| All the readings where one metric is above a threshold across all hosts
-|high-cpu-1| All the readings where one metric is above a threshold for a particular host
-|lastpoint| The last reading for each host
-|groupby-orderby-limit| The last 5 aggregate readings (across time) before a randomly chosen endpoint
+|single-groupby-1-1-1| Simple aggregrate (MAX) on one metric for 1 host, every 5 mins for 1 hour|
+|single-groupby-1-1-12| Simple aggregrate (MAX) on one metric for 1 host, every 5 mins for 12 hours|
+|single-groupby-1-8-1| Simple aggregrate (MAX) on one metric for 8 hosts, every 5 mins for 1 hour|
+|single-groupby-5-1-1| Simple aggregrate (MAX) on 5 metrics for 1 host, every 5 mins for 1 hour|
+|single-groupby-5-1-12| Simple aggregrate (MAX) on 5 metrics for 1 host, every 5 mins for 12 hours|
+|single-groupby-5-8-1| Simple aggregrate (MAX) on 5 metrics for 8 hosts, every 5 mins for 1 hour|
+|cpu-max-all-1| Aggregate across all CPU metrics per hour over 1 hour for a single host|
+|cpu-max-all-8| Aggregate across all CPU metrics per hour over 1 hour for eight hosts|
+|double-groupby-1| Aggregate on across both time and host, giving the average of 1 CPU metric per host per hour for 24 hours|
+|double-groupby-5| Aggregate on across both time and host, giving the average of 5 CPU metrics per host per hour for 24 hours|
+|double-groupby-all| Aggregate on across both time and host, giving the average of all (10) CPU metrics per host per hour for 24 hours|
+|high-cpu-all| All the readings where one metric is above a threshold across all hosts|
+|high-cpu-1| All the readings where one metric is above a threshold for a particular host|
+|lastpoint| The last reading for each host|
+|groupby-orderby-limit| The last 5 aggregate readings (across time) before a randomly chosen endpoint|
 
 ### IoT
 |Query type|Description|
 |:---|:---|
-|last-loc|Fetch real-time (i.e. last) location of each truck
-|low-fuel|Fetch all trucks with low fuel (less than 10%)
-|high-load|Fetch trucks with high current load (over 90% load capacity)
-|stationary-trucks|Fetch all trucks that are stationary (low avg velocity in last 10 mins)
-|long-driving-sessions|Get trucks which haven't rested for at least 20 mins in the last 4 hours
-|long-daily-sessions|Get trucks which drove more than 10 hours in the last 24 hours
-|avg-vs-projected-fuel-consumption|Calculate average vs. projected fuel consumption per fleet
-|avg-daily-driving-duration|Calculate average daily driving duration per driver
-|avg-daily-driving-session|Calculate average daily driving session per driver
-|avg-load|Calculate average load per truck model per fleet
-|daily-activity|Get the number of hours truck has been active (vs. out-of-commission) per day per fleet
-|breakdown-frequency|Calculate breakdown frequency by truck model
+|last-loc|Fetch real-time (i.e. last) location of each truck|
+|low-fuel|Fetch all trucks with low fuel (less than 10%)|
+|high-load|Fetch trucks with high current load (over 90% load capacity)|
+|stationary-trucks|Fetch all trucks that are stationary (low avg velocity in last 10 mins)|
+|long-driving-sessions|Get trucks which haven't rested for at least 20 mins in the last 4 hours|
+|long-daily-sessions|Get trucks which drove more than 10 hours in the last 24 hours|
+|avg-vs-projected-fuel-consumption|Calculate average vs. projected fuel consumption per fleet|
+|avg-daily-driving-duration|Calculate average daily driving duration per driver|
+|avg-daily-driving-session|Calculate average daily driving session per driver|
+|avg-load|Calculate average load per truck model per fleet|
+|daily-activity|Get the number of hours truck has been active (vs. out-of-commission) per day per fleet|
+|breakdown-frequency|Calculate breakdown frequency by truck model|
 
 ## Contributing
 

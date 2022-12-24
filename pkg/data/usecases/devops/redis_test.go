@@ -2,6 +2,7 @@ package devops
 
 import (
 	"github.com/timescale/tsbs/pkg/data"
+	"github.com/timescale/tsbs/pkg/data/usecases/common"
 	"math/rand"
 	"testing"
 	"time"
@@ -20,7 +21,7 @@ func TestRedisMeasurementTick(t *testing.T) {
 	}
 
 	rand.Seed(123)
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 	err := testDistributionsAreDifferent(oldVals, m.SubsystemMeasurement, fields)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -34,7 +35,7 @@ func TestRedisMeasurementTick(t *testing.T) {
 	if got := string(m.port); got != origPort {
 		t.Errorf("port updated unexpectedly: got %s want %s", got, origPort)
 	}
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 	err = testDistributionsAreDifferent(oldVals, m.SubsystemMeasurement, fields)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -56,7 +57,7 @@ func TestRedisMeasurementToPoint(t *testing.T) {
 	origName := m.serverName
 	origPort := m.port
 	duration := time.Second
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 
 	p := data.NewPoint()
 	m.ToPoint(p)

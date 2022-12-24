@@ -22,6 +22,10 @@ type benchmark struct {
 	batchFactory *batchFactory
 }
 
+func (b benchmark) GetDataSources() []targets.DataSource {
+	return nil
+}
+
 func newBenchmark(targetDb string, config *SpecificConfig, dataSourceConfig *source.DataSourceConfig) (targets.Benchmark, error) {
 	ds, err := initDataSource(dataSourceConfig, config.UseCurrentTime)
 	if err != nil {
@@ -96,7 +100,7 @@ func initDataSource(config *source.DataSourceConfig, useCurrentTs bool) (targets
 		}, nil
 	} else if config.Type == source.SimulatorDataSourceType {
 		dataGenerator := &inputs.DataGenerator{}
-		simulator, err := dataGenerator.CreateSimulator(config.Simulator)
+		simulator, err := dataGenerator.CreateSimulator(config.Simulator, 0)
 		if err != nil {
 			return nil, err
 		}

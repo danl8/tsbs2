@@ -30,10 +30,10 @@ func NewSubsystemMeasurementWithDistributionMakers(start time.Time, makers []Lab
 }
 
 // Tick advances all the distributions for the SubsystemMeasurement.
-func (m *SubsystemMeasurement) Tick(d time.Duration) {
+func (m *SubsystemMeasurement) Tick(d time.Duration, randomizer Randomizer) {
 	m.Timestamp = m.Timestamp.Add(d)
 	for i := range m.Distributions {
-		m.Distributions[i].Advance()
+		m.Distributions[i].Advance(randomizer)
 	}
 }
 

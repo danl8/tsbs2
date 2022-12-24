@@ -16,6 +16,10 @@ type benchmark struct {
 	dataSourceFileName string
 }
 
+func (b *benchmark) GetDataSources() []targets.DataSource {
+	return nil
+}
+
 func NewBenchmark(dbSpecificConfig *SpecificConfig, dsConfig *source.DataSourceConfig) (targets.Benchmark, error) {
 	if dsConfig.Type != source.FileDataSourceType {
 		return nil, errors.New("only FILE data source implemented for Cassandra")

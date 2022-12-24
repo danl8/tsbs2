@@ -10,25 +10,30 @@ import (
 )
 
 func NewTarget() targets.ImplementedTarget {
-	return &influxTarget{}
+	return &qdbTarget{}
 }
 
-type influxTarget struct {
+type qdbTarget struct {
 }
 
-func (t *influxTarget) TargetSpecificFlags(flagPrefix string, flagSet *pflag.FlagSet) {
-	flagSet.String(flagPrefix+"url", "http://localhost:9000/", "QuestDB REST end point")
+func (t *qdbTarget) TargetSpecificFlags(flagPrefix string, flagSet *pflag.FlagSet) {
+	flagSet.String(flagPrefix+"url", "http://localhost:9000/", "QuestDB REST end point (not implemented)")
 	flagSet.String(flagPrefix+"ilp-bind-to", "127.0.0.1:9009", "QuestDB influx line protocol TCP ip:port")
 }
 
-func (t *influxTarget) TargetName() string {
+func (t *qdbTarget) TargetName() string {
 	return constants.FormatQuestDB
 }
 
-func (t *influxTarget) Serializer() serialize.PointSerializer {
+func (t *qdbTarget) Serializer() serialize.PointSerializer {
 	return &Serializer{}
 }
 
-func (t *influxTarget) Benchmark(string, *source.DataSourceConfig, *viper.Viper) (targets.Benchmark, error) {
-	panic("not implemented")
+func (t *qdbTarget) Benchmark(_ string, dataSourceConfig *source.DataSourceConfig, v *viper.Viper) (targets.Benchmark, error) {
+	qdbSpecificConfig, err := parseSpecificConfig(v)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewBenchmark(qdbSpecificConfig, dataSourceConfig)
 }

@@ -8,7 +8,8 @@ import (
 
 const (
 	// The default size of a batch of entries within a simulation.
-	defaultBatchSize = 10
+	defaultBatchSize = 100
+	defaultChanSize  = 20
 )
 
 // SimulatorConfig is used to create an IoT Simulator.
@@ -17,8 +18,8 @@ type SimulatorConfig common.BaseSimulatorConfig
 
 // NewSimulator produces an IoT Simulator with the given
 // config over the specified interval and points limit.
-func (sc *SimulatorConfig) NewSimulator(interval time.Duration, limit uint64) common.Simulator {
-	s := (*common.BaseSimulatorConfig)(sc).NewSimulator(interval, limit)
+func (sc *SimulatorConfig) NewSimulator(interval time.Duration, limit uint64, simNumber int) common.Simulator {
+	s := (*common.BaseSimulatorConfig)(sc).NewSimulator(interval, limit, simNumber)
 
 	maxFieldCount := 0
 
@@ -33,6 +34,7 @@ func (sc *SimulatorConfig) NewSimulator(interval time.Duration, limit uint64) co
 		batchSize:       defaultBatchSize,
 		configGenerator: newBatchConfig,
 		maxFieldCount:   maxFieldCount,
+		workersCount:    sc.SimWorkersCount,
 	}
 }
 
@@ -54,6 +56,11 @@ type Simulator struct {
 	// offset is used for dealing with batch generation and keeping the
 	// insert index consistent.
 	offset int
+
+	// multithreading
+	workersCount        int // no multithreading if <= 1
+	batchChannel        chan []*data.Point
+	currentWorkersCount uint
 }
 
 // Fields returns the fields of an entry.
@@ -135,7 +142,7 @@ func (s *Simulator) batchPending() []*data.Point {
 	return batch
 }
 
-// simulateNextBatch is used to generate a new batch of entries once the current one is depleted.
+// simulateNextBatch is used to generate a new batch of entries
 func (s *Simulator) simulateNextBatch() bool {
 	if s.base.Finished() {
 		if s.pendingOutOfOrderItems() {

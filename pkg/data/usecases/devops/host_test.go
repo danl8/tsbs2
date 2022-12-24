@@ -238,8 +238,8 @@ type testMeasurement struct {
 	ticks int
 }
 
-func (m *testMeasurement) Tick(_ time.Duration)  { m.ticks++ }
-func (m *testMeasurement) ToPoint(_ *data.Point) {}
+func (m *testMeasurement) Tick(_ time.Duration, randomizer common.Randomizer) { m.ticks++ }
+func (m *testMeasurement) ToPoint(_ *data.Point)                              {}
 
 func TestHostTickAll(t *testing.T) {
 	now := time.Now()
@@ -247,12 +247,12 @@ func TestHostTickAll(t *testing.T) {
 	if got := h.SimulatedMeasurements[0].(*testMeasurement).ticks; got != 0 {
 		t.Errorf("ticks not equal to 0 to start: got %d", got)
 	}
-	h.TickAll(time.Second)
+	h.TickAll(time.Second, common.GetGlobalRandomizer())
 	if got := h.SimulatedMeasurements[0].(*testMeasurement).ticks; got != 1 {
 		t.Errorf("ticks incorrect: got %d want %d", got, 1)
 	}
 	h.SimulatedMeasurements = append(h.SimulatedMeasurements, &testMeasurement{})
-	h.TickAll(time.Second)
+	h.TickAll(time.Second, common.GetGlobalRandomizer())
 	if got := h.SimulatedMeasurements[0].(*testMeasurement).ticks; got != 2 {
 		t.Errorf("ticks incorrect after 2nd tick: got %d want %d", got, 2)
 	}

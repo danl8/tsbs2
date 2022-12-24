@@ -1,0 +1,62 @@
+################################################################################
+# This example configuration will simulate data on-the-fly so that data does
+# not have to be pre-created with `tsbs_generate_data`.
+#
+# See the documentation for each system for what configuration is available,
+# typically found at: https://github.com/timescale/tsbs/tree/master/docs
+#
+# PLEASE NOTE: There are currently memory limitations that will reduce the ingest
+# throughput, so if you are attempting to ingest the max speed of your system
+# (ingest specifically), then you will need to pre-generate the data first.
+################################################################################
+
+# configuration about where the data is coming from
+data-source:
+  # data source type [SIMULATOR|FILE]
+  type: SIMULATOR
+  # generate data on the fly
+  simulator:
+    # each time the simulator advances in time it skips this amount of time
+    log-interval: 10s
+    # maximum number of points to simulate (limit)
+    max-data-points: 10080000000
+    # number of hosts to simulate (each host has a different tag-set/label-set
+    scale: 1000
+    # set seed to some number to have reproducible data be generated
+    seed: 123
+    # start time of simulation
+    timestamp-start: "2020-01-01T00:00:00Z"
+    # end time of simulation
+    timestamp-end: "2020-01-03T00:00:00Z"
+    # use case to simulate
+    use-case: iot
+    # simulate in multi thread mode if simWorkersCount > 1
+    sim-workers-count: 4
+loader:
+  db-specific:
+    urls: http://127.0.0.1:8428/write
+  runner:
+    # the simulated data will be sent in batches of 'batch-size' points
+    # to each worker
+    batch-size: 10000
+    # don't worry about this until you need to simulate data with scale > 1000
+    channel-capacity: 10
+    db-name: victoriametrics
+    do-abort-on-exist: false
+    do-create-db: false
+    # set this to false if you want to see the speed of data generation
+    do-load: true
+    # don't worry about this until you need to simulate data with scale > 1000
+    flow-control: false
+    # use one queue for the simulated data, or a separate queue per worker
+    # points will be separated by `loader.db-specific.hash-property`
+    hash-workers: false
+    # limit how many generated points will be sent to db
+    limit: 10080000000
+    # period in which to print statistics (rows/s, total rows etc)
+    reporting-period: 10s
+    # set to some number for reproducible loads
+    seed: 123
+    # num concurrent workers/clients sending data to db
+    workers: 10
+

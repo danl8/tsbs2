@@ -566,7 +566,7 @@ func TestSimulatorTagTypes(t *testing.T) {
 		GeneratorScale:       1,
 		GeneratorConstructor: NewTruck,
 	}
-	s := sc.NewSimulator(time.Second, 1).(*Simulator)
+	s := sc.NewSimulator(time.Second, 1, 0).(*Simulator)
 	p := data.NewPoint()
 	s.Next(p)
 	tagTypes := s.TagTypes()

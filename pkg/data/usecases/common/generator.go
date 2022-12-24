@@ -13,7 +13,7 @@ import (
 type Generator interface {
 	Measurements() []SimulatedMeasurement
 	Tags() []Tag
-	TickAll(d time.Duration)
+	TickAll(d time.Duration, randomizer Randomizer)
 }
 
 // Tag is a key-value pair of information which is used to tag a generator
@@ -40,6 +40,7 @@ type DataGeneratorConfig struct {
 	InterleavedGroupID    uint          `yaml:"interleaved-generation-group-id" mapstructure:"interleaved-generation-group-id"`
 	InterleavedNumGroups  uint          `yaml:"interleaved-generation-groups" mapstructure:"interleaved-generation-groups"`
 	MaxMetricCountPerHost uint64        `yaml:"max-metric-count" mapstructure:"max-metric-count"`
+	SimWorkersCount       int           `yaml:"sim-workers-count" mapstructure:"sim-workers-count"`
 }
 
 // Validate checks that the values of the DataGeneratorConfig are reasonable.

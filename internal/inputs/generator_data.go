@@ -78,7 +78,7 @@ func (g *DataGenerator) Generate(config common.GeneratorConfig, target targets.I
 		return err
 	}
 
-	sim := scfg.NewSimulator(g.config.LogInterval, g.config.Limit)
+	sim := scfg.NewSimulator(g.config.LogInterval, g.config.Limit, 0)
 	serializer, err := g.getSerializer(sim, target)
 	if err != nil {
 		return err
@@ -87,7 +87,7 @@ func (g *DataGenerator) Generate(config common.GeneratorConfig, target targets.I
 	return g.runSimulator(sim, serializer, g.config)
 }
 
-func (g *DataGenerator) CreateSimulator(config *common.DataGeneratorConfig) (common.Simulator, error) {
+func (g *DataGenerator) CreateSimulator(config *common.DataGeneratorConfig, simNumber int) (common.Simulator, error) {
 	err := g.init(config)
 	if err != nil {
 		return nil, err
@@ -98,7 +98,7 @@ func (g *DataGenerator) CreateSimulator(config *common.DataGeneratorConfig) (com
 		return nil, err
 	}
 
-	return scfg.NewSimulator(g.config.LogInterval, g.config.Limit), nil
+	return scfg.NewSimulator(g.config.LogInterval, g.config.Limit, simNumber), nil
 }
 
 func (g *DataGenerator) runSimulator(sim common.Simulator, serializer serialize.PointSerializer, dgc *common.DataGeneratorConfig) error {
@@ -139,7 +139,7 @@ func (g *DataGenerator) getSerializer(sim common.Simulator, target targets.Imple
 	return target.Serializer(), nil
 }
 
-//TODO should be implemented in targets package
+// TODO should be implemented in targets package
 func (g *DataGenerator) writeHeader(headers *common.GeneratedDataHeaders) {
 	g.bufOut.WriteString("tags")
 

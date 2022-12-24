@@ -1,8 +1,10 @@
 package devops
 
 import (
+	"fmt"
 	"github.com/timescale/tsbs/pkg/data"
 	"github.com/timescale/tsbs/pkg/data/usecases/common"
+	"sync"
 	"time"
 )
 
@@ -11,6 +13,10 @@ import (
 type DevopsSimulator struct {
 	*commonDevopsSimulator
 	simulatedMeasurementIndex int
+}
+
+func (d *DevopsSimulator) Mu() *sync.RWMutex {
+	return &d.commonDevopsSimulator.mu
 }
 
 // Next advances a Point to the next state in the generator.
@@ -25,7 +31,7 @@ func (d *DevopsSimulator) Next(p *data.Point) bool {
 		d.simulatedMeasurementIndex = 0
 
 		for i := 0; i < len(d.hosts); i++ {
-			d.hosts[i].TickAll(d.interval)
+			d.hosts[i].TickAll(d.interval, common.GetGlobalRandomizer())
 		}
 
 		d.adjustNumHostsForEpoch()
@@ -62,7 +68,11 @@ func (d *DevopsSimulator) Headers() *common.GeneratedDataHeaders {
 type DevopsSimulatorConfig commonDevopsSimulatorConfig
 
 // NewSimulator produces a Simulator that conforms to the given SimulatorConfig over the specified interval
-func (d *DevopsSimulatorConfig) NewSimulator(interval time.Duration, limit uint64) common.Simulator {
+func (d *DevopsSimulatorConfig) NewSimulator(interval time.Duration, limit uint64, simNumber int) common.Simulator {
+	if simNumber != 0 {
+		panic(fmt.Sprintf("Multiple simulators not implmented for DevopsSimulatorConfig,but simNumber=%v specified", simNumber))
+	}
+
 	hostInfos := make([]Host, d.HostCount)
 	for i := 0; i < len(hostInfos); i++ {
 		hostInfos[i] = d.HostConstructor(NewHostCtx(i, d.Start))

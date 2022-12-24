@@ -29,6 +29,10 @@ type benchmark struct {
 	ds  targets.DataSource
 }
 
+func (b *benchmark) GetDataSources() []targets.DataSource {
+	return nil
+}
+
 func (b *benchmark) GetDataSource() targets.DataSource {
 	return b.ds
 }

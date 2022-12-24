@@ -2,12 +2,11 @@ package common
 
 import (
 	"math"
-	"math/rand"
 )
 
 // Distribution provides an interface to model a statistical distribution.
 type Distribution interface {
-	Advance()
+	Advance(randomizer Randomizer)
 	Get() float64 // should be idempotent
 }
 
@@ -29,8 +28,8 @@ func ND(mean, stddev float64) *NormalDistribution {
 
 // Advance advances this distribution. Since the distribution is
 // stateless, this just overwrites the internal cache value.
-func (d *NormalDistribution) Advance() {
-	d.value = rand.NormFloat64()*d.StdDev + d.Mean
+func (d *NormalDistribution) Advance(randomizer Randomizer) {
+	d.value = randomizer.NormFloat64()*d.StdDev + d.Mean
 }
 
 // Get returns the last computed value for this distribution.
@@ -56,8 +55,8 @@ func UD(low, high float64) *UniformDistribution {
 
 // Advance advances this distribution. Since the distribution is
 // stateless, this just overwrites the internal cache value.
-func (d *UniformDistribution) Advance() {
-	x := rand.Float64() // uniform
+func (d *UniformDistribution) Advance(randomizer Randomizer) {
+	x := randomizer.Float64() // uniform
 	x *= d.High - d.Low
 	x += d.Low
 	d.value = x
@@ -85,8 +84,8 @@ func WD(step Distribution, state float64) *RandomWalkDistribution {
 }
 
 // Advance computes the next value of this distribution and stores it.
-func (d *RandomWalkDistribution) Advance() {
-	d.Step.Advance()
+func (d *RandomWalkDistribution) Advance(randomizer Randomizer) {
+	d.Step.Advance(randomizer)
 	d.State += d.Step.Get()
 }
 
@@ -118,8 +117,8 @@ func CWD(step Distribution, min, max, state float64) *ClampedRandomWalkDistribut
 }
 
 // Advance computes the next value of this distribution and stores it.
-func (d *ClampedRandomWalkDistribution) Advance() {
-	d.Step.Advance()
+func (d *ClampedRandomWalkDistribution) Advance(randomizer Randomizer) {
+	d.Step.Advance(randomizer)
 	d.State += d.Step.Get()
 	if d.State > d.Max {
 		d.State = d.Max
@@ -144,8 +143,8 @@ type MonotonicRandomWalkDistribution struct {
 }
 
 // Advance computes the next value of this distribution and stores it.
-func (d *MonotonicRandomWalkDistribution) Advance() {
-	d.Step.Advance()
+func (d *MonotonicRandomWalkDistribution) Advance(randomizer Randomizer) {
+	d.Step.Advance(randomizer)
 	d.State += math.Abs(d.Step.Get())
 }
 
@@ -168,7 +167,7 @@ type ConstantDistribution struct {
 }
 
 // Advance does nothing in a constant distribution
-func (d *ConstantDistribution) Advance() {
+func (d *ConstantDistribution) Advance(randomizer Randomizer) {
 }
 
 // Get returns the last computed value for this distribution.
@@ -183,8 +182,8 @@ type FloatPrecision struct {
 }
 
 // Advance calls the underlying distribution Advance method.
-func (f *FloatPrecision) Advance() {
-	f.step.Advance()
+func (f *FloatPrecision) Advance(randomizer Randomizer) {
+	f.step.Advance(randomizer)
 }
 
 // Get returns the value from the underlying distribution with adjusted float value precision.
@@ -227,12 +226,12 @@ func LD(motive, dist Distribution, threshold float64) *LazyDistribution {
 }
 
 // Advance computes the next value of this distribution.
-func (d *LazyDistribution) Advance() {
-	d.motive.Advance()
+func (d *LazyDistribution) Advance(randomizer Randomizer) {
+	d.motive.Advance(randomizer)
 	if d.motive.Get() < d.threshold {
 		return
 	}
-	d.step.Advance()
+	d.step.Advance(randomizer)
 }
 
 // Get returns the last computed value for this distribution.

@@ -43,6 +43,10 @@ type aggBenchmark struct {
 	mongoBenchmark
 }
 
+func (b *aggBenchmark) GetDataSources() []targets.DataSource {
+	return nil
+}
+
 func newAggBenchmark(l load.BenchmarkRunner, conf *load.BenchmarkRunnerConfig) *aggBenchmark {
 	// Pre-create the needed empty subdoc for new aggregate docs
 	generateEmptyHourDoc()
@@ -103,23 +107,24 @@ func (p *aggProcessor) Init(_ int, doLoad, _ bool) {
 // is first encountered)
 //
 // A document is structured like so:
-//  {
-//    "doc_id": "day_x_00",
-//    "key_id": "x_00",
-//    "measurement": "cpu",
-//    "tags": {
-//      "hostname": "host0",
-//      ...
-//    },
-//    "events": [
-//      [
-//        {
-//          "field1": 0.0,
-//          ...
-//		  }
-//      ]
-//    ]
-//  }
+//
+//	 {
+//	   "doc_id": "day_x_00",
+//	   "key_id": "x_00",
+//	   "measurement": "cpu",
+//	   "tags": {
+//	     "hostname": "host0",
+//	     ...
+//	   },
+//	   "events": [
+//	     [
+//	       {
+//	         "field1": 0.0,
+//	         ...
+//			  }
+//	     ]
+//	   ]
+//	 }
 func (p *aggProcessor) ProcessBatch(b targets.Batch, doLoad bool) (uint64, uint64) {
 	docToEvents := make(map[string][]*point)
 	batch := b.(*batch)

@@ -240,9 +240,9 @@ func newHostWithMeasurementGenerator(gen generator, ctx *HostContext) Host {
 }
 
 // TickAll advances all Distributions of a Host.
-func (h *Host) TickAll(d time.Duration) {
+func (h *Host) TickAll(d time.Duration, randomizer common.Randomizer) {
 	for i := range h.SimulatedMeasurements {
-		h.SimulatedMeasurements[i].Tick(d)
+		h.SimulatedMeasurements[i].Tick(d, randomizer)
 	}
 }
 

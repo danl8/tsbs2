@@ -20,6 +20,10 @@ type benchmark struct {
 	bufPool      *sync.Pool
 }
 
+func (b *benchmark) GetDataSources() []targets.DataSource {
+	return nil
+}
+
 func (b *benchmark) GetDataSource() targets.DataSource {
 	return &fileDataSource{reader: load.GetBufferedReader(b.loadFileName)}
 }

@@ -17,7 +17,7 @@ var testDevopsConf = &DevopsSimulatorConfig{
 }
 
 func TestDevopsSimulatorNext(t *testing.T) {
-	s := testDevopsConf.NewSimulator(time.Second, 0).(*DevopsSimulator)
+	s := testDevopsConf.NewSimulator(time.Second, 0, 0).(*DevopsSimulator)
 	// There are two epochs for the test configuration, and a difference of 90
 	// from init to final, so each epoch should add 45 devices to be written.
 	writtenIdx := []int{10, 55, 100}
@@ -64,7 +64,7 @@ func TestDevopsSimulatorConfigNewSimulator(t *testing.T) {
 		HostCount:       numHosts,
 		HostConstructor: NewHost,
 	}
-	sim := conf.NewSimulator(duration, 0).(*DevopsSimulator)
+	sim := conf.NewSimulator(duration, 0, 0).(*DevopsSimulator)
 	if got := sim.madePoints; got != 0 {
 		t.Errorf("incorrect initial points: got %d want %d", got, 0)
 	}

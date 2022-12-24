@@ -56,7 +56,7 @@ func (d dummyGenerator) Tags() []Tag {
 	return tags
 }
 
-func (d dummyGenerator) TickAll(duration time.Duration) {
+func (d dummyGenerator) TickAll(duration time.Duration, randomizer Randomizer) {
 }
 
 func dummyGeneratorConstructor(i int, start time.Time) Generator {
@@ -64,7 +64,7 @@ func dummyGeneratorConstructor(i int, start time.Time) Generator {
 }
 
 func TestBaseSimulatorNext(t *testing.T) {
-	s := testBaseConf.NewSimulator(time.Second, 0).(*BaseSimulator)
+	s := testBaseConf.NewSimulator(time.Second, 0, 0).(*BaseSimulator)
 	// There are two epochs for the test configuration, and a difference of 90
 	// from init to final, so each epoch should add 45 devices to be written.
 	writtenIdx := []int{10, 55, 100}
@@ -99,7 +99,7 @@ func TestBaseSimulatorNext(t *testing.T) {
 }
 
 func TestBaseSimulatorTagKeys(t *testing.T) {
-	s := testBaseConf.NewSimulator(time.Second, 0).(*BaseSimulator)
+	s := testBaseConf.NewSimulator(time.Second, 0, 0).(*BaseSimulator)
 
 	tagKeys := s.TagKeys()
 
@@ -127,7 +127,7 @@ func TestBaseSimulatorTagKeysPanic(t *testing.T) {
 }
 
 func TestBaseSimulatorTagTypes(t *testing.T) {
-	s := testBaseConf.NewSimulator(time.Second, 0).(*BaseSimulator)
+	s := testBaseConf.NewSimulator(time.Second, 0, 0).(*BaseSimulator)
 
 	tagTypes := s.TagTypes()
 
@@ -155,7 +155,7 @@ func TestBaseSimulatorTagTypesPanic(t *testing.T) {
 }
 
 func TestBaseSimulatorFields(t *testing.T) {
-	s := testBaseConf.NewSimulator(time.Second, 0).(*BaseSimulator)
+	s := testBaseConf.NewSimulator(time.Second, 0, 0).(*BaseSimulator)
 
 	fields := s.Fields()
 
@@ -209,7 +209,7 @@ func TestBaseSimulatorConfigNewSimulator(t *testing.T) {
 
 	for _, limit := range cases {
 		t.Run(fmt.Sprintf("limit %d", limit), func(t *testing.T) {
-			sim := conf.NewSimulator(duration, limit).(*BaseSimulator)
+			sim := conf.NewSimulator(duration, limit, 0).(*BaseSimulator)
 			if got := sim.madePoints; got != 0 {
 				t.Errorf("incorrect initial points: got %d want %d", got, 0)
 			}

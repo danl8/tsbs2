@@ -101,4 +101,5 @@ func addDataSourceFlags(fs *pflag.FlagSet) {
 		defaultScale,
 		"Scaling value specific to use case (e.g., devices in 'devops', trucks in iot).")
 	fs.Duration("data-source.simulator.log-interval", defaultLogInterval, "Duration between data points")
+	fs.Int("data-source.simulator.sim-workers-count", 1, "Count of workers to produce data in simulation mode")
 }

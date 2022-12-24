@@ -2,6 +2,7 @@ package devops
 
 import (
 	"github.com/timescale/tsbs/pkg/data"
+	"github.com/timescale/tsbs/pkg/data/usecases/common"
 	"math/rand"
 	"testing"
 	"time"
@@ -19,7 +20,7 @@ func TestKernelMeasurementTick(t *testing.T) {
 	}
 
 	rand.Seed(123)
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 	err := testDistributionsAreDifferent(oldVals, m.SubsystemMeasurement, fields)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -27,7 +28,7 @@ func TestKernelMeasurementTick(t *testing.T) {
 	if got := m.bootTime; got != bootTime {
 		t.Errorf("boot time changed unexpectedly: got %d", got)
 	}
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 	err = testDistributionsAreDifferent(oldVals, m.SubsystemMeasurement, fields)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -42,7 +43,7 @@ func TestKernelMeasurementToPoint(t *testing.T) {
 	m := NewKernelMeasurement(now)
 	duration := time.Second
 	bootTime := m.bootTime
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 
 	p := data.NewPoint()
 	m.ToPoint(p)

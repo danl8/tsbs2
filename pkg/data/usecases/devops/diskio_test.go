@@ -2,6 +2,7 @@ package devops
 
 import (
 	"github.com/timescale/tsbs/pkg/data"
+	"github.com/timescale/tsbs/pkg/data/usecases/common"
 	"math/rand"
 	"testing"
 	"time"
@@ -19,7 +20,7 @@ func TestDiskIOMeasurementTick(t *testing.T) {
 	}
 
 	rand.Seed(123)
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 	err := testDistributionsAreDifferent(oldVals, m.SubsystemMeasurement, fields)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -27,7 +28,7 @@ func TestDiskIOMeasurementTick(t *testing.T) {
 	if got := string(m.serial); got != origSerial {
 		t.Errorf("server name updated unexpectedly: got %s want %s", got, origSerial)
 	}
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 	err = testDistributionsAreDifferent(oldVals, m.SubsystemMeasurement, fields)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -42,7 +43,7 @@ func TestDiskIOMeasurementToPoint(t *testing.T) {
 	m := NewDiskIOMeasurement(now)
 	origSerial := string(m.serial)
 	duration := time.Second
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 
 	p := data.NewPoint()
 	m.ToPoint(p)

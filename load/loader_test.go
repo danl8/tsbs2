@@ -83,6 +83,10 @@ type testBenchmark struct {
 	offset     int64
 }
 
+func (b *testBenchmark) GetDataSources() []targets.DataSource {
+	return nil
+}
+
 func (b *testBenchmark) GetDataSource() targets.DataSource {
 	return nil
 }

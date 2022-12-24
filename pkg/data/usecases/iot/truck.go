@@ -72,9 +72,9 @@ type Truck struct {
 }
 
 // TickAll advances all Distributions of a Truck.
-func (t *Truck) TickAll(d time.Duration) {
+func (t *Truck) TickAll(d time.Duration, randomizer common.Randomizer) {
 	for i := range t.simulatedMeasurements {
-		t.simulatedMeasurements[i].Tick(d)
+		t.simulatedMeasurements[i].Tick(d, randomizer)
 	}
 }
 

@@ -2,6 +2,7 @@ package iot
 
 import (
 	"github.com/timescale/tsbs/pkg/data"
+	"github.com/timescale/tsbs/pkg/data/usecases/common"
 	"testing"
 	"time"
 )
@@ -10,7 +11,7 @@ func TestReadingsMeasurementToPoint(t *testing.T) {
 	now := time.Now()
 	m := NewReadingsMeasurement(now)
 	duration := time.Second
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 
 	p := data.NewPoint()
 	m.ToPoint(p)

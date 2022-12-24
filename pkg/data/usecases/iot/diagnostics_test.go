@@ -11,7 +11,7 @@ func TestDiagnosticsMeasurementToPoint(t *testing.T) {
 	now := time.Now()
 	m := NewDiagnosticsMeasurement(now)
 	duration := time.Second
-	m.Tick(duration)
+	m.Tick(duration, common.GetGlobalRandomizer())
 
 	p := data.NewPoint()
 	m.ToPoint(p)
@@ -38,8 +38,8 @@ func TestCustomFuelDistribution(t *testing.T) {
 
 	for i := 0; i < testCount; i++ {
 		for clampedDist.Get() > fuelMin {
-			clampedDist.Advance()
-			fuelDist.Advance()
+			clampedDist.Advance(common.GetGlobalRandomizer())
+			fuelDist.Advance(common.GetGlobalRandomizer())
 
 			if clampedDist.Get() != fuelDist.Get() {
 

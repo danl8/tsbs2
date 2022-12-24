@@ -69,7 +69,7 @@ func newSyncCSI() *syncCSI {
 }
 
 type syncCSI struct {
-	// Map hostname to tags.id for this host
+	// Map hostname to tags.id for this Host
 	m     map[string]int64
 	mutex *sync.RWMutex
 }
@@ -210,7 +210,7 @@ func (p *processor) processCSI(tableName string, rows []*insertData) uint64 {
 	for i := range dataRows {
 		// tagKey = hostname
 		tagKey := tagRows[i][0]
-		// Insert id of the tag (tags.id) for this host into tags_id position of the dataRows record
+		// Insert id of the tag (tags.id) for this Host into tags_id position of the dataRows record
 		// refers to
 		// nil,		// tags_id
 

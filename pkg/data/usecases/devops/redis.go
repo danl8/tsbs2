@@ -78,8 +78,8 @@ func NewRedisMeasurement(start time.Time) *RedisMeasurement {
 	}
 }
 
-func (m *RedisMeasurement) Tick(d time.Duration) {
-	m.SubsystemMeasurement.Tick(d)
+func (m *RedisMeasurement) Tick(d time.Duration, randomizer common.Randomizer) {
+	m.SubsystemMeasurement.Tick(d, randomizer)
 	m.uptime += d
 }
 
