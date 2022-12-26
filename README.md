@@ -33,13 +33,19 @@ Tested only with:
 ### IoT2 test case description
 New test case IoT2 added. This test case uses the same data set as IoT, but contains queries
 relevant for my use cases. This test case implemented for DBs:
-* Victoria Metrics -planned
-* Quest DB -done
-* Click House -done
+* Victoria Metrics
+* Quest DB
+* Click House 
+
+Because MetricQL (PromQL) language quite different by its structure and internal concept
+from SQL, don't sure that Victoria Metrics test case calculates exactly same results as
+Quest DB and ClickHouse. But it should be very similar in terms of calculation complexity.
 ### IoT2 configuration
 To generate queries for IoT2 you should run `tsbs_generate_queries` with `--use-case="iot2"`.
 Additionally, you should specify:
-* `--trucks-count` - total count of different tucks in your dataset, IoT2 queries data for random track, so this count mandatory to correctly set boundary for random generator
+* `--trucks-count` - total count of different tucks in your dataset, 
+IoT2 queries data for random track, so this count mandatory to correctly set boundary 
+for random generator
 * `--days-count` - IoT2 selects queries data form random date fo period of days specified in this parameter
 * `--scale` - you can omit this parameter, value will be ignored
 

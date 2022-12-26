@@ -36,7 +36,7 @@ func (g *IoT2Generator) DailyFuelConsumptionRow(query query.Query) {
 		iot2.ReadingsTable,
 		periodCondition)
 
-	humanLabel := iot2.GetDailyFuelConsumptionRowLabel(g.config.Format, g.config.DaysCount, g.config.TrucksCount)
+	humanLabel := iot2.GetDailyFuelConsumptionRowLabel(g.config)
 	humanDesc := fmt.Sprintf("%s: %s, %v", humanLabel, startStr, tagId)
 	g.fillInQuery(query, humanLabel, humanDesc, sql)
 }
@@ -49,7 +49,7 @@ func (g *IoT2Generator) DailyAverageLoad(query query.Query) {
 		iot2.DiagnosticsTable,
 		periodCondition)
 
-	humanLabel := iot2.GetDailyAverageLoadLabel(g.config.Format, g.config.DaysCount, g.config.TrucksCount)
+	humanLabel := iot2.GetDailyAverageLoadLabel(g.config)
 	humanDesc := fmt.Sprintf("%s: %s, %v", humanLabel, startStr, tagId)
 	g.fillInQuery(query, humanLabel, humanDesc, sql)
 }
@@ -62,7 +62,7 @@ func (g *IoT2Generator) DailyLowFuelCount(query query.Query) {
 		iot2.FuelStateTag,
 		periodCondition)
 
-	humanLabel := iot2.GetDailyLowFuelCountLabel(g.config.Format, g.config.DaysCount, g.config.TrucksCount)
+	humanLabel := iot2.GetDailyLowFuelCountLabel(g.config)
 	humanDesc := fmt.Sprintf("%s: %s, %v", humanLabel, startStr, tagId)
 	g.fillInQuery(query, humanLabel, humanDesc, sql)
 }

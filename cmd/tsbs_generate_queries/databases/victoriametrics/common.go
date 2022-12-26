@@ -2,6 +2,8 @@ package victoriametrics
 
 import (
 	"fmt"
+	"github.com/timescale/tsbs/cmd/tsbs_generate_queries/uses/common"
+	"github.com/timescale/tsbs/pkg/query/config"
 	"net/url"
 	"strconv"
 	"time"
@@ -31,6 +33,24 @@ func (g *BaseGenerator) NewDevops(start, end time.Time, scale int) (utils.QueryG
 	}, nil
 }
 
+func (g *BaseGenerator) NewIoT2(start, end time.Time, scale int,
+	c *config.QueryGeneratorConfig) (utils.QueryGenerator, error) {
+
+	core, err := common.NewCore(start, end, scale)
+
+	if err != nil {
+		return nil, err
+	}
+
+	iot2 := &IoT2Generator{
+		BaseGenerator: g,
+		Core:          core,
+		config:        c,
+	}
+
+	return iot2, nil
+}
+
 type queryInfo struct {
 	// prometheus query
 	query string
@@ -45,7 +65,7 @@ type queryInfo struct {
 }
 
 // fill Query fills the query struct with data
-func (g *BaseGenerator) fillInQuery(qq query.Query, qi *queryInfo) {
+func (g *BaseGenerator) fillInQuery(qq query.Query, qi *queryInfo, isQuery bool) {
 	q := qq.(*query.HTTP)
 	q.HumanLabel = []byte(qi.label)
 	if qi.interval != nil {
@@ -54,10 +74,15 @@ func (g *BaseGenerator) fillInQuery(qq query.Query, qi *queryInfo) {
 	q.Method = []byte("GET")
 
 	v := url.Values{}
-	v.Set("query", qi.query)
 	v.Set("start", strconv.FormatInt(qi.interval.StartUnixNano()/1e9, 10))
 	v.Set("end", strconv.FormatInt(qi.interval.EndUnixNano()/1e9, 10))
-	v.Set("step", qi.step)
-	q.Path = []byte(fmt.Sprintf("/api/v1/query_range?%s", v.Encode()))
+	if isQuery {
+		v.Set("step", qi.step)
+		v.Set("query", qi.query)
+		q.Path = []byte(fmt.Sprintf("/api/v1/query_range?%s", v.Encode()))
+	} else {
+		v.Set("match[]", qi.query)
+		q.Path = []byte(fmt.Sprintf("/api/v1/export?%s", v.Encode()))
+	}
 	q.Body = nil
 }

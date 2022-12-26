@@ -57,7 +57,7 @@ func (d *Devops) GroupByTime(qq query.Query, nHosts, numMetrics int, timeRange t
 		interval: d.Interval.MustRandWindow(timeRange),
 		step:     "60",
 	}
-	d.fillInQuery(qq, qi)
+	d.fillInQuery(qq, qi, true)
 }
 
 // GroupByTimeAndPrimaryTag selects the AVG of numMetrics metrics under 'cpu' per device per hour for a day,
@@ -84,7 +84,7 @@ func (d *Devops) GroupByTimeAndPrimaryTag(qq query.Query, numMetrics int) {
 		interval: d.Interval.MustRandWindow(devops.DoubleGroupByDuration),
 		step:     "3600",
 	}
-	d.fillInQuery(qq, qi)
+	d.fillInQuery(qq, qi, true)
 }
 
 // MaxAllCPU selects the MAX of all metrics under 'cpu' per hour for nhosts hosts,
@@ -106,7 +106,7 @@ func (d *Devops) MaxAllCPU(qq query.Query, nHosts int, duration time.Duration) {
 		interval: d.Interval.MustRandWindow(duration),
 		step:     "3600",
 	}
-	d.fillInQuery(qq, qi)
+	d.fillInQuery(qq, qi, true)
 }
 
 func getHostClause(hostnames []string) string {

@@ -3,6 +3,7 @@ package iot2
 import (
 	"fmt"
 	"github.com/timescale/tsbs/pkg/query"
+	"github.com/timescale/tsbs/pkg/query/config"
 )
 
 const (
@@ -46,17 +47,17 @@ const (
 	CurrentLoadTag     = "current_load"
 )
 
-func GetDailyFuelConsumptionRowLabel(dbName string, days int, tagsCount int) string {
-	return fmt.Sprintf("%s fuel consaption all rows, for random %v days, and random truck (trucks count %v)",
-		dbName, days, tagsCount)
+func GetDailyFuelConsumptionRowLabel(config *config.QueryGeneratorConfig) string {
+	return fmt.Sprintf("%s fuel consumption all rows, for random %v days, and random truck (trucks count %v)",
+		config.Format, config.DaysCount, config.TrucksCount)
 }
 
-func GetDailyAverageLoadLabel(dbName string, days int, tagsCount int) string {
+func GetDailyAverageLoadLabel(config *config.QueryGeneratorConfig) string {
 	return fmt.Sprintf("%s average load, for random %v days, and random truck (trucks count %v)",
-		dbName, days, tagsCount)
+		config.Format, config.DaysCount, config.TrucksCount)
 }
 
-func GetDailyLowFuelCountLabel(dbName string, days int, tagsCount int) string {
+func GetDailyLowFuelCountLabel(config *config.QueryGeneratorConfig) string {
 	return fmt.Sprintf("%s count of rows where fuel bellow or equal 10%%, for random %v days, and random truck (trucks count %v)",
-		dbName, days, tagsCount)
+		config.Format, config.DaysCount, config.TrucksCount)
 }
