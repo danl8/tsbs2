@@ -23,6 +23,7 @@ const (
 	UseCaseCPUSingle     = "cpu-single"
 	UseCaseDevops        = "devops"
 	UseCaseIoT           = "iot"
+	UseCaseIoT2          = "iot2"
 	UseCaseDevopsGeneric = "devops-generic"
 )
 
@@ -31,5 +32,6 @@ var UseCaseChoices = []string{
 	UseCaseCPUSingle,
 	UseCaseDevops,
 	UseCaseIoT,
+	UseCaseIoT2,
 	UseCaseDevopsGeneric,
 }

@@ -35,11 +35,15 @@ func calculateEpochs(duration time.Duration, interval time.Duration) uint64 {
 // NewSimulator produces a Simulator that conforms to the given config over the specified interval.
 func (sc *BaseSimulatorConfig) NewSimulator(interval time.Duration, limit uint64, simNumber int) Simulator {
 	scale := sc.GeneratorScale
+	startID := 0
 	if sc.SimWorkersCount > 1 {
 		scale = scale / uint64(sc.SimWorkersCount)
 		remainGens := sc.GeneratorScale % scale
 		if uint64(simNumber) < remainGens {
 			scale++
+			startID = simNumber * int(scale)
+		} else {
+			startID = simNumber*int(scale) + int(remainGens)
 		}
 	} else {
 		simNumber = 0
@@ -47,7 +51,7 @@ func (sc *BaseSimulatorConfig) NewSimulator(interval time.Duration, limit uint64
 	generators := make([]Generator, scale)
 
 	for i := 0; i < len(generators); i++ {
-		generators[i] = sc.GeneratorConstructor(i+simNumber*int(scale), sc.Start)
+		generators[i] = sc.GeneratorConstructor(i+startID, sc.Start)
 	}
 
 	epochs := calculateEpochs(sc.End.Sub(sc.Start), interval)

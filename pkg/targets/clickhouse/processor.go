@@ -182,13 +182,19 @@ func (p *processor) processCSI(tableName string, rows []*insertData) uint64 {
 	// Check if any of these tags has yet to be inserted
 	// New tags in this batch, need to be inserted
 	newTags := make([][]string, 0, len(rows))
+	newTagsCheck := make(map[string]bool)
 	p.csi.mutex.RLock()
 	for _, tagRow := range tagRows {
 		// tagRow contains what was called `tags` earlier - see one screen higher
 		// tagRow[0] = hostname
 		if _, ok := p.csi.m[tagRow[0]]; !ok {
-			// Tags of this hostname are not listed as inserted - new tags line, add it for creation
-			newTags = append(newTags, tagRow)
+			// It is possible that in tagRow some tags are duplicated, and we
+			// don't need duplicated tags
+			if _, ok := newTagsCheck[tagRow[0]]; !ok {
+				// Tags of this hostname are not listed as inserted - new tags line, add it for creation
+				newTags = append(newTags, tagRow)
+				newTagsCheck[tagRow[0]] = true
+			}
 		}
 	}
 	p.csi.mutex.RUnlock()

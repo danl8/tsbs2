@@ -29,10 +29,44 @@ Tested only with:
 * Victoria Metrics.
 * Quest DB
 * Click House
-## IoT request generation 
-for DB: Victoria Metrics, Quest DB, Click House -planned
+## IoT2 request generation
+### IoT2 test case description
+New test case IoT2 added. This test case uses the same data set as IoT, but contains queries
+relevant for my use cases. This test case implemented for DBs:
+* Victoria Metrics -planned
+* Quest DB -planned
+* Click House -done
+### IoT2 configuration
+To generate queries for IoT2 you should run `tsbs_generate_queries` with `--use-case="iot2"`.
+Additionally, you should specify:
+* `--trucks-count` - total count of different tucks in your dataset, IoT2 queries data for random track, so this count mandatory to correctly set boundary for random generator
+* `--days-count` - IoT2 selects queries data form random date fo period of days specified in this parameter
+* `--scale` - you can omit this parameter, value will be ignored
+
+All other parameters have the same meaning as in other use cases.
+Example of correct IoT2 queries generation for ClickHouse: 
+```bash
+tsbs_generate_queries --use-case="iot2" --seed=123 \
+    --timestamp-start="2010-07-25T00:00:00Z" --timestamp-end="2010-08-01T00:00:01Z" \
+    --queries=1000 --query-type="all-in-order" \
+    --format="clickhouse" \
+    --file "queries_iot2_all_1000_clickhouse.txt"
+```
+
+### Implemented query types
+For parameter `--query-type` you can specify following types:
+
+| Value<br/>`--query-type`   | Description                                                                                               |
+|----------------------------|-----------------------------------------------------------------------------------------------------------|
+| all-in-order               | Creates all queries listed bellow cyclically in order                                                     |
+| daily-average-load         | Queries average load of random truck per N consecutive days (`--days-count`)                              |
+| daily-fuel-consumption-row | Queries all rows with registered fuel consumption of random truck per N consecutive days (`--days-count`) |
+| daily-low-fuel-count       | Queries count of row where fuel count <= 10% for random truck per N consecutive days (`--days-count`)     |
+
+
+
 ## Other changes
-* Click House should use new syntax for MergeTree table initialization
+* Click House use new syntax for MergeTree table initialization
 
 
 

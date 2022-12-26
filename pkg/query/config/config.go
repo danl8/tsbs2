@@ -29,6 +29,10 @@ type QueryGeneratorConfig struct {
 
 	MongoUseNaive bool   `mapstructure:"mongo-use-native"`
 	DbName        string `mapstructure:"db-name"`
+
+	// All variable bellow used to generate
+	TrucksCount int `mapstructure:"trucks-count"`
+	DaysCount   int `mapstructure:"days-count"`
 }
 
 // Validate checks that the values of the QueryGeneratorConfig are reasonable.
@@ -63,4 +67,7 @@ func (c *QueryGeneratorConfig) AddToFlagSet(fs *pflag.FlagSet) {
 	fs.Bool("timescale-use-time-bucket", true, "TimescaleDB only: Use time bucket. Set to false to test on native PostgreSQL")
 
 	fs.String("db-name", "benchmark", "Specify database name. Timestream requires it in order to generate the queries")
+
+	fs.Int("trucks-count", 100, "For IoT2. Specify trucks count saved in prepared data set")
+	fs.Int("days-count", 1, "For IoT2. Specify count of days, will be used to analyse data for this period")
 }

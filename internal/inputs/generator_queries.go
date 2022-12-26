@@ -35,9 +35,14 @@ type DevopsGeneratorMaker interface {
 	NewDevops(start, end time.Time, scale int) (queryUtils.QueryGenerator, error)
 }
 
-// IoTGeneratorMaker creates a quert generator for iot use case
+// IoTGeneratorMaker creates a query generator for iot use case
 type IoTGeneratorMaker interface {
 	NewIoT(start, end time.Time, scale int) (queryUtils.QueryGenerator, error)
+}
+
+// IoT2GeneratorMaker creates a query generator for iot2 use case
+type IoT2GeneratorMaker interface {
+	NewIoT2(start, end time.Time, scale int, c *config.QueryGeneratorConfig) (queryUtils.QueryGenerator, error)
 }
 
 // QueryGenerator is a type of Generator for creating queries to test against a
@@ -196,6 +201,16 @@ func (g *QueryGenerator) getUseCaseGenerator(c *config.QueryGeneratorConfig) (qu
 		}
 
 		return devopsFactory.NewDevops(g.tsStart, g.tsEnd, scale)
+
+	case common.UseCaseIoT2:
+		iotFactory, ok := factory.(IoT2GeneratorMaker)
+
+		if !ok {
+			return nil, fmt.Errorf(errUseCaseNotImplementedFmt, c.Use, c.Format)
+		}
+
+		return iotFactory.NewIoT2(g.tsStart, g.tsEnd, scale, c)
+
 	default:
 		return nil, fmt.Errorf(errUnknownUseCaseFmt, c.Use)
 	}
