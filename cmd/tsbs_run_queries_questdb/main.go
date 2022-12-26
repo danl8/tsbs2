@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/timescale/tsbs/cmd/tsbs_run_queries_questdb/http_client"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -78,19 +79,19 @@ func main() {
 }
 
 type processor struct {
-	w    *HTTPClient
-	opts *HTTPClientDoOptions
+	w    *http_client.HTTPClient
+	opts *http_client.HTTPClientDoOptions
 }
 
 func newProcessor() query.Processor { return &processor{} }
 
 func (p *processor) Init(workerNumber int) {
-	p.opts = &HTTPClientDoOptions{
+	p.opts = &http_client.HTTPClientDoOptions{
 		Debug:                runner.DebugLevel(),
 		PrettyPrintResponses: runner.DoPrintResponses(),
 	}
 	url := daemonUrls[workerNumber%len(daemonUrls)]
-	p.w = NewHTTPClient(url)
+	p.w = http_client.NewHTTPClient(url)
 }
 
 func (p *processor) ProcessQuery(q query.Query, _ bool) ([]*query.Stat, error) {

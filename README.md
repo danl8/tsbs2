@@ -34,7 +34,7 @@ Tested only with:
 New test case IoT2 added. This test case uses the same data set as IoT, but contains queries
 relevant for my use cases. This test case implemented for DBs:
 * Victoria Metrics -planned
-* Quest DB -planned
+* Quest DB -done
 * Click House -done
 ### IoT2 configuration
 To generate queries for IoT2 you should run `tsbs_generate_queries` with `--use-case="iot2"`.
@@ -48,7 +48,8 @@ Example of correct IoT2 queries generation for ClickHouse:
 ```bash
 tsbs_generate_queries --use-case="iot2" --seed=123 \
     --timestamp-start="2010-07-25T00:00:00Z" --timestamp-end="2010-08-01T00:00:01Z" \
-    --queries=1000 --query-type="all-in-order" \
+    --queries=1000 --query-type="all-in-order" \ 
+    --trucks-count=100 --days-count=1 \
     --format="clickhouse" \
     --file "queries_iot2_all_1000_clickhouse.txt"
 ```

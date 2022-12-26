@@ -47,16 +47,16 @@ const (
 )
 
 func GetDailyFuelConsumptionRowLabel(dbName string, days int, tagsCount int) string {
-	return fmt.Sprintf("%s fuel consaption all rows, for random %v days, and random tag id (max %v)",
-		dbName, days, tagsCount+1)
+	return fmt.Sprintf("%s fuel consaption all rows, for random %v days, and random truck (trucks count %v)",
+		dbName, days, tagsCount)
 }
 
 func GetDailyAverageLoadLabel(dbName string, days int, tagsCount int) string {
-	return fmt.Sprintf("%s average load, for random %v days, and random tag id (max %v)",
-		dbName, days, tagsCount+1)
+	return fmt.Sprintf("%s average load, for random %v days, and random truck (trucks count %v)",
+		dbName, days, tagsCount)
 }
 
 func GetDailyLowFuelCountLabel(dbName string, days int, tagsCount int) string {
-	return fmt.Sprintf("%s count of rows where fuel bellow or equal 10%%, for random %v days, and random tag id (max %v)",
-		dbName, days, tagsCount+1)
+	return fmt.Sprintf("%s count of rows where fuel bellow or equal 10%%, for random %v days, and random truck (trucks count %v)",
+		dbName, days, tagsCount)
 }

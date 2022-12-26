@@ -2,6 +2,8 @@ package questdb
 
 import (
 	"fmt"
+	"github.com/timescale/tsbs/cmd/tsbs_generate_queries/uses/common"
+	"github.com/timescale/tsbs/pkg/query/config"
 	"net/url"
 	"time"
 
@@ -47,4 +49,22 @@ func (g *BaseGenerator) NewDevops(start, end time.Time, scale int) (utils.QueryG
 	}
 
 	return devops, nil
+}
+
+func (g *BaseGenerator) NewIoT2(start, end time.Time, scale int,
+	c *config.QueryGeneratorConfig) (utils.QueryGenerator, error) {
+
+	core, err := common.NewCore(start, end, scale)
+
+	if err != nil {
+		return nil, err
+	}
+
+	iot2 := &IoT2Generator{
+		BaseGenerator: g,
+		Core:          core,
+		config:        c,
+	}
+
+	return iot2, nil
 }
