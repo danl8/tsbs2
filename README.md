@@ -71,6 +71,23 @@ For parameter `--query-type` you can specify following types:
 | daily-low-fuel-count       | Queries count of row where fuel count <= 10% for random truck per N consecutive days (`--days-count`)     |
 
 
+## Optimisation for ClickHouse DB Structure
+This changes should lead to lower space per data point usage, and possible fast query performance.
+Optimisation includes:
+ * DoubleDelta for date columns
+ * Gorilla compression for time series values columns
+ * LowCardinality for string labels
+ * Removed `time String` and `additional_tags String` columns
+
+To use new optimized structure pleas specify yaml parameter (or corresponding program argument):
+```yaml
+loader:
+  db-specific:
+    use-optimized-structure: true
+```
+**IMPORTANT** Optimized structure tested only with iot ingestion scenario and iot2 queries scenario.
+Additional coding may be needed to use optimized structure with other scenarios.
+
 
 ## Other changes
 * Click House use new syntax for MergeTree table initialization

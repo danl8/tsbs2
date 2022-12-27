@@ -152,13 +152,24 @@ func (p *processor) processCSI(tableName string, rows []*insertData) uint64 {
 		// time
 		// tags_id - would be nil for now
 		// additional_tags
-		tagsIdPosition = 3 // what is the position of the tags_id in the row - nil value
-		r = append(r,
-			timeUTC,    // created_date
-			timeUTC,    // created_at
-			TimeUTCStr, // time
-			nil,        // tags_id
-			json)       // additional_tags
+		if p.conf.UseOptimizedStructure {
+			tagsIdPosition = 2 // what is the position of the tags_id in the row - nil value
+		} else {
+			tagsIdPosition = 3 // what is the position of the tags_id in the row - nil value
+		}
+		if p.conf.UseOptimizedStructure {
+			r = append(r,
+				timeUTC, // created_date
+				timeUTC, // created_at
+				nil)     // tags_id
+		} else {
+			r = append(r,
+				timeUTC,    // created_date
+				timeUTC,    // created_at
+				TimeUTCStr, // time
+				nil,        // tags_id
+				json)       // additional_tags
+		}
 
 		if p.conf.InTableTag {
 			r = append(r, tags[0]) // tags[0] = hostname
@@ -230,7 +241,11 @@ func (p *processor) processCSI(tableName string, rows []*insertData) uint64 {
 	// Inspite of "additional_tags" being added the last one in CREATE TABLE stmt
 	// it goes as a third one here - because we can move columns - they are named
 	// and it is easier to keep variable coumns at the end of the list
-	cols = append(cols, "created_date", "created_at", "time", "tags_id", "additional_tags")
+	if p.conf.UseOptimizedStructure {
+		cols = append(cols, "created_date", "created_at", "tags_id")
+	} else {
+		cols = append(cols, "created_date", "created_at", "time", "tags_id", "additional_tags")
+	}
 	if p.conf.InTableTag {
 		cols = append(cols, tableCols["tags"][0]) // hostname
 	}

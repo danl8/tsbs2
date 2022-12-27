@@ -20,10 +20,11 @@ type ClickhouseConfig struct {
 	User     string
 	Password string
 
-	LogBatches bool
-	InTableTag bool
-	Debug      int
-	DbName     string
+	LogBatches            bool
+	InTableTag            bool
+	Debug                 int
+	DbName                string
+	UseOptimizedStructure bool
 
 	dataSourceConf *source.DataSourceConfig
 }

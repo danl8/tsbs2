@@ -110,7 +110,7 @@ func (d *dbCreator) CreateDB(dbName string) error {
 
 // createTagsTable builds CREATE TABLE SQL statement and runs it
 func createTagsTable(conf *ClickhouseConfig, db *sqlx.DB, tagNames, tagTypes []string) {
-	sql := generateTagsTableQuery(tagNames, tagTypes)
+	sql := generateTagsTableQuery(tagNames, tagTypes, conf.UseOptimizedStructure)
 	if conf.Debug > 0 {
 		fmt.Printf(sql)
 	}
@@ -136,6 +136,10 @@ func createMetricsTable(conf *ClickhouseConfig, db *sqlx.DB, tableName string, f
 	// Add all column names from fieldColumns into columnNames
 	columnNames = append(columnNames, fieldColumns...)
 
+	codec := ""
+	if conf.UseOptimizedStructure {
+		codec = " Codec(Gorilla)"
+	}
 	// columnsWithType - column specifications with type. Ex.: "cpu_usage Float64"
 	var columnsWithType []string
 	for _, column := range columnNames {
@@ -143,10 +147,27 @@ func createMetricsTable(conf *ClickhouseConfig, db *sqlx.DB, tableName string, f
 			// Skip nameless columns
 			continue
 		}
-		columnsWithType = append(columnsWithType, fmt.Sprintf("%s Nullable(Float64)", column))
+		columnsWithType = append(columnsWithType, fmt.Sprintf("%s Nullable(Float64)%s", column, codec))
 	}
 
-	sql := fmt.Sprintf(`
+	sql := ""
+	if conf.UseOptimizedStructure {
+		sql = fmt.Sprintf(`
+			CREATE TABLE %s (
+				created_date    Date     DEFAULT today() Codec(DoubleDelta),
+				created_at      DateTime DEFAULT now() Codec(DoubleDelta),
+				tags_id         UInt32,
+				%s
+			)
+			ENGINE = MergeTree()
+			PARTITION BY created_date
+			ORDER BY (tags_id, created_at)
+		    SETTINGS index_granularity = 8192
+			`,
+			tableName,
+			strings.Join(columnsWithType, ","))
+	} else {
+		sql = fmt.Sprintf(`
 			CREATE TABLE %s (
 				created_date    Date     DEFAULT today(),
 				created_at      DateTime DEFAULT now(),
@@ -160,8 +181,9 @@ func createMetricsTable(conf *ClickhouseConfig, db *sqlx.DB, tableName string, f
 			ORDER BY (tags_id, created_at)
 		    SETTINGS index_granularity = 8192
 			`,
-		tableName,
-		strings.Join(columnsWithType, ","))
+			tableName,
+			strings.Join(columnsWithType, ","))
+	}
 	if conf.Debug > 0 {
 		fmt.Printf(sql)
 	}
@@ -171,7 +193,7 @@ func createMetricsTable(conf *ClickhouseConfig, db *sqlx.DB, tableName string, f
 	}
 }
 
-func generateTagsTableQuery(tagNames, tagTypes []string) string {
+func generateTagsTableQuery(tagNames, tagTypes []string, useOptimizedStructure bool) string {
 	// prepare COLUMNs specification for CREATE TABLE statement
 	// all columns would be of the type specified in the tags header
 	// e.g. tags, tag2 string,tag2 int32...
@@ -181,7 +203,7 @@ func generateTagsTableQuery(tagNames, tagTypes []string) string {
 
 	tagColumnDefinitions := make([]string, len(tagNames))
 	for i, tagName := range tagNames {
-		tagType := serializedTypeToClickHouseType(tagTypes[i])
+		tagType := serializedTypeToClickHouseType(tagTypes[i], useOptimizedStructure)
 		tagColumnDefinitions[i] = fmt.Sprintf("%s %s", tagName, tagType)
 	}
 
@@ -203,10 +225,15 @@ func generateTagsTableQuery(tagNames, tagTypes []string) string {
 		index)
 }
 
-func serializedTypeToClickHouseType(serializedType string) string {
+func serializedTypeToClickHouseType(serializedType string, useOptimizedStructure bool) string {
+	codec1, codec2 := "", ""
+	if useOptimizedStructure {
+		codec1 = "LowCardinality("
+		codec2 = ")"
+	}
 	switch serializedType {
 	case "string":
-		return "Nullable(String)"
+		return fmt.Sprintf("%s%s%s", codec1, "Nullable(String)", codec2)
 	case "float32":
 		return "Nullable(Float32)"
 	case "float64":

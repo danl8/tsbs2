@@ -11,13 +11,14 @@ import (
 )
 
 type SpecificConfig struct {
-	Debug       int    `yaml:"Debug" mapstructure:"Debug"`
-	Host        string `yaml:"Host" mapstructure:"Host"`
-	LogBatches  bool   `yaml:"log-batches" mapstructure:"log-batches"`
-	Password    string `yaml:"Password" mapstructure:"Password"`
-	User        string `yaml:"Host" mapstructure:"User"`
-	HashWorkers bool   `yaml:"hash-workers" mapstructure:"hash-workers"`
-	InTableTag  bool   `yaml:"in-table-tag" mapstructure:"in-table-tag"`
+	Debug                 int    `yaml:"Debug" mapstructure:"Debug"`
+	Host                  string `yaml:"Host" mapstructure:"Host"`
+	LogBatches            bool   `yaml:"log-batches" mapstructure:"log-batches"`
+	Password              string `yaml:"Password" mapstructure:"Password"`
+	User                  string `yaml:"Host" mapstructure:"User"`
+	HashWorkers           bool   `yaml:"hash-workers" mapstructure:"hash-workers"`
+	InTableTag            bool   `yaml:"in-table-tag" mapstructure:"in-table-tag"`
+	UseOptimizedStructure bool   `yaml:"use-optimized-structure" mapstructure:"use-optimized-structure"`
 }
 
 func parseSpecificConfig(v *viper.Viper) (*SpecificConfig, error) {
@@ -40,14 +41,15 @@ func (c clickhouseTarget) Benchmark(name string, dsConfig *source.DataSourceConf
 		return nil, err
 	}
 	cc := ClickhouseConfig{
-		Host:           chSpecificConfig.Host,
-		User:           chSpecificConfig.User,
-		Password:       chSpecificConfig.Password,
-		LogBatches:     chSpecificConfig.LogBatches,
-		InTableTag:     chSpecificConfig.InTableTag,
-		Debug:          chSpecificConfig.Debug,
-		DbName:         "benchmark",
-		dataSourceConf: dsConfig,
+		Host:                  chSpecificConfig.Host,
+		User:                  chSpecificConfig.User,
+		Password:              chSpecificConfig.Password,
+		LogBatches:            chSpecificConfig.LogBatches,
+		InTableTag:            chSpecificConfig.InTableTag,
+		Debug:                 chSpecificConfig.Debug,
+		DbName:                "benchmark",
+		UseOptimizedStructure: chSpecificConfig.UseOptimizedStructure,
+		dataSourceConf:        dsConfig,
 	}
 	f := ""
 	if dsConfig.File != nil {
@@ -72,6 +74,8 @@ func (c clickhouseTarget) TargetSpecificFlags(flagPrefix string, flagSet *pflag.
 	flagSet.Int(flagPrefix+"Debug", 0, "Debug printing (choices: 0, 1, 2). (default 0)")
 	flagSet.Bool(flagPrefix+"hash-workers", false, "Use hash workers (should be the same as in runner config")
 	flagSet.Bool(flagPrefix+"in-table-tag", false, "Whether the partition key (e.g. hostname) should also be in the metrics hypertable")
+	flagSet.Bool(flagPrefix+"use-optimized-structure", false, "Use optimized codecs, and omit some columns when "+
+		"creating DB if ture. May not work for all use cases.")
 }
 
 func (c clickhouseTarget) TargetName() string {
