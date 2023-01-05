@@ -103,7 +103,7 @@ func (sp *defaultStatProcessor) process(workers uint) {
 			statPool.Put(stat)
 			continue
 		} else if i == sp.args.burnIn && sp.args.burnIn > 0 {
-			_, err := fmt.Fprintf(os.Stderr, "burn-in complete after %d queries with %d workers\n", sp.args.burnIn, workers)
+			_, err := fmt.Fprintf(os.Stdout, "burn-in complete after %d queries with %d workers\n", sp.args.burnIn, workers)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -152,11 +152,11 @@ func (sp *defaultStatProcessor) process(workers uint) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			err = writeStatGroupMap(os.Stderr, sp.statMapping)
+			err = writeStatGroupMap(os.Stdout, sp.statMapping)
 			if err != nil {
 				log.Fatal(err)
 			}
-			_, err = fmt.Fprintf(os.Stderr, "\n")
+			_, err = fmt.Fprintf(os.Stdout, "\n")
 			if err != nil {
 				log.Fatal(err)
 			}

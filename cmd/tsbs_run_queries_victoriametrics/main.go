@@ -119,7 +119,7 @@ func (p *processor) do(q *query.HTTP) (float64, error) {
 		if err := json.Indent(&pretty, body, prefix, "  "); err != nil {
 			return lag, err
 		}
-		_, err = fmt.Fprintf(os.Stderr, "%s%s\n", prefix, pretty.Bytes())
+		_, err = fmt.Fprintf(os.Stdout, "%s%s\n", prefix, pretty.Bytes())
 		if err != nil {
 			return lag, err
 		}
