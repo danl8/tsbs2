@@ -143,7 +143,7 @@ func (sp *defaultStatProcessor) process(workers uint) {
 			took := now.Sub(prevTime)
 			intervalQueryRate := float64(sp.opsCount-prevRequestCount) / float64(took.Seconds())
 			overallQueryRate := float64(sp.opsCount) / float64(sinceStart.Seconds())
-			_, err := fmt.Fprintf(os.Stderr, "After %d queries with %d workers:\nInterval query rate: %0.2f queries/sec\tOverall query rate: %0.2f queries/sec\n",
+			_, err := fmt.Fprintf(os.Stdout, "After %d queries with %d workers:\nInterval query rate: %0.2f queries/sec\tOverall query rate: %0.2f queries/sec\n",
 				i-sp.args.burnIn,
 				workers,
 				intervalQueryRate,
