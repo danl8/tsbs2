@@ -14,6 +14,13 @@ type CPUOnlySimulator struct {
 	*commonDevopsSimulator
 }
 
+func (d *CPUOnlySimulator) Randomizer() *common.Randomizer {
+	//TODO Should be common.GetGlobalRandomizer() in single thread
+	//		and common.GetUnsafeRandomizer() in multi thread mode,
+	//		unsafe randomizer should be initialized once when Simulator initialized
+	panic("implement me")
+}
+
 func (d *CPUOnlySimulator) Mu() *sync.RWMutex {
 	return &d.commonDevopsSimulator.mu
 }

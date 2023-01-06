@@ -8,6 +8,7 @@ import (
 type Randomizer interface {
 	NormFloat64() float64
 	Float64() float64
+	Intn(n int) int
 }
 
 type GlobalRand struct {
@@ -15,6 +16,10 @@ type GlobalRand struct {
 
 type ThreadUnsafeRand struct {
 	r *rand.Rand
+}
+
+func (t *ThreadUnsafeRand) Intn(n int) int {
+	return t.r.Intn(n)
 }
 
 func GetUnsafeRandomizer() Randomizer {
@@ -33,6 +38,10 @@ func (t *ThreadUnsafeRand) NormFloat64() float64 {
 
 func (t *ThreadUnsafeRand) Float64() float64 {
 	return t.r.Float64()
+}
+
+func (g *GlobalRand) Intn(n int) int {
+	return rand.Intn(n)
 }
 
 func (g *GlobalRand) NormFloat64() float64 {

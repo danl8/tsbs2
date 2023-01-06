@@ -15,6 +15,13 @@ type DevopsSimulator struct {
 	simulatedMeasurementIndex int
 }
 
+func (d *DevopsSimulator) Randomizer() *common.Randomizer {
+	//TODO Should be common.GetGlobalRandomizer() in single thread
+	//		and common.GetUnsafeRandomizer() in multi thread mode,
+	//		unsafe randomizer should be initialized once when Simulator initialized
+	panic("implement me")
+}
+
 func (d *DevopsSimulator) Mu() *sync.RWMutex {
 	return &d.commonDevopsSimulator.mu
 }

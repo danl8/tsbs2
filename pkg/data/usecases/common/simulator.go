@@ -60,6 +60,10 @@ func (sc *BaseSimulatorConfig) NewSimulator(interval time.Duration, limit uint64
 		// Set specified points number limit
 		maxPoints = limit
 	}
+	rnd := GetGlobalRandomizer()
+	if sc.SimWorkersCount > 0 {
+		rnd = GetUnsafeRandomizer()
+	}
 	sim := &BaseSimulator{
 		madePoints: 0,
 		maxPoints:  maxPoints,
@@ -78,6 +82,7 @@ func (sc *BaseSimulatorConfig) NewSimulator(interval time.Duration, limit uint64
 		simulatedMeasurementIndex: 0,
 
 		simWorkersCount: sc.SimWorkersCount,
+		randomizer:      rnd,
 	}
 
 	return sim
@@ -97,6 +102,7 @@ type Simulator interface {
 	TagKeys() []string
 	TagTypes() []string
 	Headers() *GeneratedDataHeaders
+	Randomizer() *Randomizer
 }
 
 // BaseSimulator generates data similar to truck readings.
@@ -119,6 +125,11 @@ type BaseSimulator struct {
 	simulatedMeasurementIndex int
 
 	simWorkersCount int
+	randomizer      Randomizer
+}
+
+func (s *BaseSimulator) Randomizer() *Randomizer {
+	return &s.randomizer
 }
 
 // Finished tells whether we have simulated all the necessary points.
@@ -141,14 +152,8 @@ func (s *BaseSimulator) Next(p *data.Point) bool {
 		//		if workers > 1
 		// Performance with Workers Pool here worse than with single thread
 		// will add parallelization above
-		var r Randomizer
-		if s.simWorkersCount > 1 {
-			r = GetGlobalRandomizer()
-		} else {
-			r = GetGlobalRandomizer()
-		}
 		for i := 0; i < len(s.generators); i++ {
-			s.generators[i].TickAll(s.interval, r)
+			s.generators[i].TickAll(s.interval, s.randomizer)
 		}
 		/*
 			if s.simWorkersCount > 1 {

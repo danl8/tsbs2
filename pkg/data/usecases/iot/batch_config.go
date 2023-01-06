@@ -1,6 +1,8 @@
 package iot
 
-import "math/rand"
+import (
+	"github.com/timescale/tsbs/pkg/data/usecases/common"
+)
 
 var (
 	// Batch chances.
@@ -32,9 +34,9 @@ type batchConfig struct {
 	OutOfOrderEntries   map[int]bool
 }
 
-func newBatchConfig(outOfOrderBatchCount, outOfOrderEntryCount, fieldCount, tagCount int) *batchConfig {
+func newBatchConfig(outOfOrderBatchCount, outOfOrderEntryCount, fieldCount, tagCount int, randomizer *common.Randomizer) *batchConfig {
 
-	batchMissing := rand.Float64() < bMissingChance
+	batchMissing := (*randomizer).Float64() < bMissingChance
 
 	if batchMissing {
 		return &batchConfig{
@@ -42,11 +44,11 @@ func newBatchConfig(outOfOrderBatchCount, outOfOrderEntryCount, fieldCount, tagC
 		}
 	}
 
-	batchOutOfOrder := rand.Float64() < bOutOfOrderChance
+	batchOutOfOrder := (*randomizer).Float64() < bOutOfOrderChance
 
 	batchInsertPrevious := false
 	if outOfOrderBatchCount > 0 {
-		batchInsertPrevious = rand.Float64() < bInsertPreviousChance
+		batchInsertPrevious = (*randomizer).Float64() < bInsertPreviousChance
 	}
 
 	zeroFields := make(map[int]int)
@@ -56,26 +58,26 @@ func newBatchConfig(outOfOrderBatchCount, outOfOrderEntryCount, fieldCount, tagC
 	outOfOrderEntries := make(map[int]bool)
 
 	for i := 0; i < defaultBatchSize; i++ {
-		if outOfOrderEntryCount > 0 && rand.Float64() < eInsertPreviousChance {
+		if outOfOrderEntryCount > 0 && (*randomizer).Float64() < eInsertPreviousChance {
 			insertPreviousEntry[i] = true
 			outOfOrderEntryCount--
 		}
 
-		if rand.Float64() < eMissingChance {
+		if (*randomizer).Float64() < eMissingChance {
 			missingEntries[i] = true
 			// Since the entry is missing, no point in setting zero values or making it out-of-order.
 			continue
 		}
 
-		if fieldCount > 0 && rand.Float64() < zeroFieldChance {
-			zeroFields[i] = rand.Intn(fieldCount)
+		if fieldCount > 0 && (*randomizer).Float64() < zeroFieldChance {
+			zeroFields[i] = (*randomizer).Intn(fieldCount)
 		}
 
-		if tagCount > 0 && rand.Float64() < zeroTagChance {
-			zeroTags[i] = rand.Intn(tagCount)
+		if tagCount > 0 && (*randomizer).Float64() < zeroTagChance {
+			zeroTags[i] = (*randomizer).Intn(tagCount)
 		}
 
-		if rand.Float64() < eOutOfOrderChance {
+		if (*randomizer).Float64() < eOutOfOrderChance {
 			outOfOrderEntries[i] = true
 		}
 	}

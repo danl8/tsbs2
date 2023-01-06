@@ -20,6 +20,13 @@ type GenericMetricsSimulator struct {
 	*commonDevopsSimulator
 }
 
+func (gms *GenericMetricsSimulator) Randomizer() *common.Randomizer {
+	//TODO Should be common.GetGlobalRandomizer() in single thread
+	//		and common.GetUnsafeRandomizer() in multi thread mode,
+	//		unsafe randomizer should be initialized once when Simulator initialized
+	panic("implement me")
+}
+
 func (gms *GenericMetricsSimulator) Mu() *sync.RWMutex {
 	return &gms.commonDevopsSimulator.mu
 }

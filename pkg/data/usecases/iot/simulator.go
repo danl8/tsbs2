@@ -45,7 +45,7 @@ func (sc *SimulatorConfig) NewSimulator(interval time.Duration, limit uint64, si
 type Simulator struct {
 	base            common.Simulator
 	batchSize       uint
-	configGenerator func(outOfOrderBatchCount, outOfOrderEntryCount, fieldCount, tagCount int) *batchConfig
+	configGenerator func(outOfOrderBatchCount, outOfOrderEntryCount, fieldCount, tagCount int, randomizer *common.Randomizer) *batchConfig
 	// maxFieldCount is the maximum amount of fields an entry can have
 	maxFieldCount int
 
@@ -61,6 +61,10 @@ type Simulator struct {
 	workersCount        int // no multithreading if <= 1
 	batchChannel        chan []*data.Point
 	currentWorkersCount uint
+}
+
+func (s Simulator) Randomizer() *common.Randomizer {
+	return s.base.Randomizer()
 }
 
 // Fields returns the fields of an entry.
@@ -153,7 +157,7 @@ func (s *Simulator) simulateNextBatch() bool {
 		return false
 	}
 
-	bc := s.configGenerator(len(s.outOfOrderBatches), len(s.outOfOrderEntries), s.maxFieldCount, len(s.TagKeys()))
+	bc := s.configGenerator(len(s.outOfOrderBatches), len(s.outOfOrderEntries), s.maxFieldCount, len(s.TagKeys()), s.Randomizer())
 
 	if bc.InsertPrevious {
 		if len(s.outOfOrderBatches) == 0 {
