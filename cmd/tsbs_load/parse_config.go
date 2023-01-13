@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/blagojts/viper"
+	"github.com/prometheus/common/log"
 	"github.com/timescale/tsbs/load"
 	"github.com/timescale/tsbs/pkg/data/source"
 	"github.com/timescale/tsbs/pkg/data/usecases/common"
@@ -43,6 +44,15 @@ func parseConfig(target targets.ImplementedTarget, v *viper.Viper) (targets.Benc
 		return nil, nil, fmt.Errorf("config file didn't have loader.db-specific specified")
 	}
 
+	if int(dataSourceInternal.Simulator.Scale) < dataSource.Simulator.SimWorkersCount {
+
+		log.Warnf("sim-workers-count (%v) can't be grater then scale (%v), "+
+			"sim-workers-count will be reduced to equal scale\n",
+			dataSourceInternal.Simulator.SimWorkersCount,
+			int(dataSourceInternal.Simulator.Scale))
+		dataSourceInternal.Simulator.SimWorkersCount = int(dataSourceInternal.Simulator.Scale)
+		dataSource.Simulator.SimWorkersCount = int(dataSourceInternal.Simulator.Scale)
+	}
 	benchmark, err := target.Benchmark(loaderConfigInternal.DBName, dataSourceInternal, dbSpecificViper)
 	if err != nil {
 		return nil, nil, err

@@ -69,6 +69,7 @@ func (d *Devops) getSelectClausesAggMetrics(aggregateFunction string, metrics []
 
 // ClickHouse understands and can compare time presented as strings of this format
 const clickhouseTimeStringFormat = "2006-01-02 15:04:05"
+const clickhouseDateFormat = "2006-01-02"
 
 // MaxAllCPU selects the MAX of all metrics under 'cpu' per hour for nhosts hosts,
 // e.g. in pseudo-SQL:

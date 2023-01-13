@@ -21,10 +21,10 @@ func (g *IoT2Generator) getConditionForRandomPeriodAndId() (string, string, int)
 	interval := g.Interval.MustRandWindow(d)
 	tagId := rand.Intn(g.config.TrucksCount) + 1
 
-	sql := fmt.Sprintf("(tags_id = '%v') AND (created_at >= '%s') AND (created_at < '%s')",
+	sql := fmt.Sprintf("(tags_id = '%v') AND (created_date >= '%s') AND (created_date < '%s')",
 		tagId,
-		interval.Start().Format(clickhouseTimeStringFormat),
-		interval.End().Format(clickhouseTimeStringFormat))
+		interval.Start().Format(clickhouseDateFormat),
+		interval.End().Format(clickhouseDateFormat))
 	return sql, interval.StartString(), tagId
 }
 
