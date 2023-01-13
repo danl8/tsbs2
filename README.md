@@ -91,6 +91,18 @@ Additional coding may be needed to use optimized structure with other scenarios.
 
 ## Other changes
 * Click House use new syntax for MergeTree table initialization
+* Later should add parameter `ignore-fake-tags`, by default equals to false. Should be analyzed in IoT data generation scenarios:
+  * If false - benchmark behaves as previously: all numeric labels (aka fake tags) will be added as new timeseries, string
+tags still will be added as labels. This logic not inline with ClickHouse benchmark logic, because
+ClickHouse writes such tags in small separate table, and not creates timeseries for them. So number of written 
+metrics for ClickHouse benchmark less than for VictoriaMetrics, QuestDB, InfluxDB... benchmark, for same scale and period
+  * If true - benchmark for VictoriaMetrics, QuestDB, InfluxDB... will ignore all numeric labels (aka fake tags), so the 
+number of metrics for same period and scale for this DBs, will be equal to the number of metrics for ClickHouse.
+  * **WARNING** currently `ignore-fake-tags` = true hardcoded for VictoriaMetrics, QuestDB, InfluxDB and should be moved to configuration
+  * Notice, for ClickHouse `ignore-fake-tags` = false were never implemented
+  * For DBs other than VictoriaMetrics, QuestDB, InfluxDB, ClickHouse, this flag not implemented, and how they process not text labels
+unknown
+
 
 
 

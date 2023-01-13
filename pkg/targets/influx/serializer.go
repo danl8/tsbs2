@@ -18,6 +18,9 @@ type Serializer struct{}
 // For example:
 // foo,tag0=bar baz=-1.0 100\n
 func (s *Serializer) Serialize(p *data.Point, w io.Writer) (err error) {
+	//TODO: ignoreFakeTags should be moved to configuration
+	ignoreFakeTags := true
+
 	buf := make([]byte, 0, 1024)
 	buf = append(buf, p.MeasurementName()...)
 
@@ -35,7 +38,9 @@ func (s *Serializer) Serialize(p *data.Point, w io.Writer) (err error) {
 			buf = append(buf, '=')
 			buf = append(buf, []byte(v)...)
 		default:
-			fakeTags = append(fakeTags, i)
+			if !ignoreFakeTags {
+				fakeTags = append(fakeTags, i)
+			}
 		}
 	}
 	fieldKeys := p.FieldKeys()
